@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Меню на неделю</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='88'%3E%F0%9F%8D%BD%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#FAFAF6; --surface:#FFFFFF; --raise:#F3F3EC;
+    --ink:#23261F; --muted:#6C7065; --line:#E6E7DE;
+    --accent:#4E7A46; --accent-soft:#EAF1E6;
+    --train:#4E7A46; --train-soft:#EAF1E6;
+    --office:#B26A34; --office-soft:#F6EBE0;
+    --rest:#5C7488; --rest-soft:#E9EEF2;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#161713; --surface:#1E201A; --raise:#25281F;
+      --ink:#ECEDE3; --muted:#9AA08D; --line:#2E312A;
+      --accent:#93BC88; --accent-soft:#24301E;
+      --train:#93BC88; --train-soft:#232F1D;
+      --office:#D89C64; --office-soft:#31261A;
+      --rest:#8CA6BA; --rest-soft:#1E272E;
+    }
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5;
+    -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;}
+  .wrap{max-width:720px;margin:0 auto;padding:0 14px 56px;}
+
+  header.top{position:sticky;top:0;z-index:5;background:var(--bg);
+    padding:14px 0 10px;border-bottom:1px solid var(--line);}
+  .titlerow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
+  h1{font-size:19px;font-weight:800;letter-spacing:-.01em;margin:0;}
+  .toggle{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--muted);
+    font-family:var(--sans);font-size:12px;font-weight:600;padding:7px 12px;border-radius:999px;
+    cursor:pointer;display:inline-flex;gap:7px;align-items:center;white-space:nowrap;}
+  .toggle:hover{border-color:var(--accent);color:var(--ink);}
+  .toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .toggle .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+
+  .tabs{display:flex;gap:6px;}
+  .tab{flex:1;appearance:none;border:1px solid var(--line);background:var(--surface);
+    color:var(--muted);font-family:var(--sans);font-size:13px;font-weight:700;padding:9px 0;
+    border-radius:10px;cursor:pointer;text-align:center;transition:background .12s,color .12s,border-color .12s;}
+  .tab:hover{border-color:var(--tc,var(--accent));color:var(--ink);}
+  .tab:focus-visible{outline:2px solid var(--tc,var(--accent));outline-offset:2px;}
+  .tab[aria-selected="true"]{background:var(--tc,var(--accent));border-color:var(--tc,var(--accent));color:#fff;}
+  @media (prefers-color-scheme:dark){.tab[aria-selected="true"]{color:#14160f;}}
+
+  main{padding-top:16px;}
+  .panel{display:none;}
+  .panel.active{display:block;animation:fade .18s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+  .dhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+    background:var(--dc-soft,var(--accent-soft));border:1px solid var(--line);
+    border-left:4px solid var(--dc,var(--accent));border-radius:14px;padding:14px 16px;margin-bottom:14px;}
+  .dname{font-size:22px;font-weight:800;letter-spacing:-.01em;line-height:1.1;}
+  .dtype{font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;
+    color:var(--dc,var(--accent));margin-top:4px;}
+  .macros{text-align:right;font-family:var(--mono);white-space:nowrap;}
+  .macros .kc{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .macros .pr{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:2px;}
+
+  .meals{display:flex;flex-direction:column;gap:12px;}
+  .meal{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 15px;}
+  .mlabel{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:9px;}
+  .mlabel .sub{letter-spacing:0;text-transform:none;font-weight:500;font-size:11px;}
+  .batch{margin-left:auto;background:var(--office-soft);color:var(--office);border-radius:999px;
+    padding:2px 9px;font-size:10px;letter-spacing:.02em;text-transform:none;font-weight:700;}
+
+  .dish{padding:7px 0;}
+  .dish + .dish{border-top:1px solid var(--line);}
+  .dishline{display:flex;justify-content:space-between;gap:10px;align-items:baseline;}
+  .dish .t{font-weight:600;font-size:15px;}
+  .dish .p{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap;
+    font-variant-numeric:tabular-nums;}
+  .prod{font-size:12.5px;color:var(--muted);margin-top:3px;}
+  .prod::before{content:"продукты: ";color:var(--accent);font-weight:600;}
+  .src{font-size:12.5px;color:var(--office);font-weight:600;margin-top:3px;}
+  .src::before{content:"⟳ ";}
+  :root.hide-prod .prod{display:none;}
+
+  details.how{margin-top:18px;border:1px solid var(--line);border-radius:12px;background:var(--surface);
+    padding:0 14px;}
+  details.how summary{cursor:pointer;padding:12px 0;font-size:13px;font-weight:700;color:var(--accent);
+    letter-spacing:.04em;text-transform:uppercase;list-style:none;}
+  details.how summary::-webkit-details-marker{display:none;}
+  details.how summary::before{content:"＋ ";}
+  details.how[open] summary::before{content:"− ";}
+  details.how ul{margin:0 0 12px;padding-left:18px;font-size:13.5px;}
+  details.how li{margin:5px 0;}
+
+  footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center;}
+  @media (prefers-reduced-motion:reduce){.panel.active{animation:none;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="titlerow">
+      <h1>🍽️ Меню на неделю</h1>
+      <button class="toggle" id="prodToggle" type="button" aria-pressed="true">
+        <span class="dot"></span><span id="prodLabel">продукты</span>
+      </button>
+    </div>
+    <div class="tabs" id="tabs" role="tablist" aria-label="Дни недели"></div>
+  </header>
+
+  <main id="panels"></main>
+
+  <details class="how">
+    <summary>Как это работает</summary>
+    <ul>
+      <li><b>Большая готовка два вечера — ПН и СР.</b> Часть ужина уходит в два рабочих приёма назавтра: ПН → ВТ, СР → ЧТ.</li>
+      <li><b>Закупка волнами.</b> Индейка держит ПН–ВТ (и ПТ), курица — СР–ЧТ, рыба и креветки — вторую половину недели.</li>
+      <li><b>Белок по 4 приёмам, творог 2% на ночь.</b> Время приёмов на похудение не влияет — держим сумму калорий и белок. Среднее: 2237 ккал, белок 194 г/день.</li>
+    </ul>
+  </details>
+
+  <footer>Черновик · собрано 24.07.2026 · порции — ориентир, двигаем гарнир, белок держим</footer>
+</div>
+
+<script>
+const WEEK = [
+ {day:"Понедельник",sh:"ПН",type:"train",tlabel:"День A · тренировка",kcal:2277,protein:203,meals:[
+   {label:"Завтрак",sub:"после зала",dishes:[
+     {t:"Яйца варёные",p:"2 шт",prod:"яйца"},
+     {t:"Творог 2%",p:"200 г",prod:"творог 2% плотный"},
+     {t:"Хлеб гречневый с луком",p:"80 г",prod:"хлеб гречневый (готовый)"},
+     {t:"Банан",p:"1 шт",prod:"банан"}]},
+   {label:"Обед",dishes:[
+     {t:"Курица на ГХИ с овощами",p:"170 г",prod:"куриное филе, масло ГХИ, овощи"},
+     {t:"Рис отварной",p:"220 г",prod:"рис"},
+     {t:"Брокколи",p:"150 г",prod:"брокколи"}]},
+   {label:"Перекус",dishes:[
+     {t:"Творожная миска",p:"180 г",prod:"творог 2%, греч. йогурт, ягоды"},
+     {t:"Нектарин",p:"1 шт",prod:"нектарин"},
+     {t:"Кефир 1%",p:"250 мл",prod:"кефир 1%"}]},
+   {label:"Ужин",batch:"готовим индейку с запасом",dishes:[
+     {t:"Котлеты рубленые индейки",p:"250 г",prod:"филе индейки, яйцо, лук"},
+     {t:"Гречка",p:"160 г",prod:"гречка"},
+     {t:"Салат огурцы-помидоры с йогуртом",p:"",prod:"огурцы, помидоры, греч. йогурт"}]}
+ ]},
+ {day:"Вторник",sh:"ВТ",type:"office",tlabel:"Офис · 2 приёма на работу",kcal:2230,protein:177,meals:[
+   {label:"Завтрак",sub:"дома",dishes:[
+     {t:"Омлет с сыром",p:"",prod:"яйца, сыр, молоко"},
+     {t:"Спортхлеб",p:"1 ломт.",prod:"спортхлеб BB"},
+     {t:"Творог 2%",p:"100 г",prod:"творог 2%"},
+     {t:"Банан",p:"1 шт",prod:"банан"}]},
+   {label:"Работа · 1",dishes:[
+     {t:"Котлеты индейки",p:"200 г",leftover:"остатки ПН-ужина"},
+     {t:"Булгур",p:"215 г",prod:"булгур"},
+     {t:"Хлеб гречневый",p:"50 г",prod:"хлеб гречневый"},
+     {t:"Огурец + черри",p:"",prod:"огурец, помидоры черри"}]},
+   {label:"Работа · 2",dishes:[
+     {t:"Котлеты индейки",p:"150 г",leftover:"остатки ПН-ужина"},
+     {t:"Сыр X-TRA FIT 20%",p:"40 г",prod:"сыр X-TRA FIT"},
+     {t:"Хлеб гречневый",p:"70 г",prod:"хлеб гречневый"},
+     {t:"Банан",p:"1 шт",prod:"банан"}]},
+   {label:"Ужин",sub:"дома",dishes:[
+     {t:"Лосось запечённый",p:"170 г",prod:"лосось (стейк)"},
+     {t:"Картофель запечённый",p:"220 г",prod:"картофель"},
+     {t:"Брокколи",p:"150 г",prod:"брокколи"}]}
+ ]},
+ {day:"Среда",sh:"СР",type:"train",tlabel:"День B · тренировка",kcal:2266,protein:224,meals:[
+   {label:"Завтрак",sub:"после зала",dishes:[
+     {t:"Творог 2%",p:"200 г",prod:"творог 2%"},
+     {t:"Яйца варёные",p:"2 шт",prod:"яйца"},
+     {t:"Хлопья кукурузные",p:"50 г",prod:"хлопья без сахара"},
+     {t:"Кефир 1%",p:"250 мл",prod:"кефир 1%"}]},
+   {label:"Обед",dishes:[
+     {t:"Куриная грудка в специях",p:"150 г",prod:"куриная грудка, специи"},
+     {t:"Макароны высокобелковые",p:"167 г",prod:"макароны Макфа высокобелковые"},
+     {t:"Салат огурцы-помидоры с йогуртом",p:"",prod:"огурцы, помидоры, греч. йогурт"}]},
+   {label:"Перекус",dishes:[
+     {t:"Греч. йогурт 2%",p:"200 г",prod:"греческий йогурт 2%"},
+     {t:"Ягоды",p:"100 г",prod:"голубика / клубника"},
+     {t:"Банан",p:"1 шт",prod:"банан"}]},
+   {label:"Ужин",batch:"готовим курицу с запасом",dishes:[
+     {t:"Курица на ГХИ с овощами",p:"250 г",prod:"куриное филе, масло ГХИ, овощи"},
+     {t:"Рис отварной",p:"170 г",prod:"рис"},
+     {t:"Цветная капуста",p:"",prod:"цветная капуста"}]}
+ ]},
+ {day:"Четверг",sh:"ЧТ",type:"office",tlabel:"Офис · 2 приёма на работу",kcal:2182,protein:200,meals:[
+   {label:"Завтрак",sub:"дома",dishes:[
+     {t:"Омлет с сыром",p:"",prod:"яйца, сыр, молоко"},
+     {t:"Творог 2%",p:"100 г",prod:"творог 2%"},
+     {t:"Хлеб гречневый",p:"60 г",prod:"хлеб гречневый"},
+     {t:"Банан",p:"1 шт",prod:"банан"}]},
+   {label:"Работа · 1",dishes:[
+     {t:"Курица на ГХИ",p:"200 г",leftover:"остатки СР-ужина"},
+     {t:"Рис отварной",p:"220 г",prod:"рис"},
+     {t:"Огурец + черри",p:"",prod:"огурец, помидоры черри"}]},
+   {label:"Работа · 2",dishes:[
+     {t:"Курица на ГХИ",p:"150 г",leftover:"остатки СР-ужина"},
+     {t:"Хлеб гречневый",p:"90 г",prod:"хлеб гречневый"},
+     {t:"Киви",p:"1 шт",prod:"киви"}]},
+   {label:"Ужин",sub:"дома",dishes:[
+     {t:"Тиляпия филе запечённая",p:"160 г",prod:"тиляпия (филе)"},
+     {t:"Булгур",p:"215 г",prod:"булгур"},
+     {t:"Салат огурцы-помидоры с йогуртом",p:"",prod:"огурцы, помидоры, греч. йогурт"}]}
+ ]},
+ {day:"Пятница",sh:"ПТ",type:"train",tlabel:"День A · тренировка",kcal:2195,protein:192,meals:[
+   {label:"Завтрак",sub:"после зала",dishes:[
+     {t:"Яйца варёные",p:"2 шт",prod:"яйца"},
+     {t:"Творог 2%",p:"200 г",prod:"творог 2%"},
+     {t:"Банан",p:"1 шт",prod:"банан"},
+     {t:"Хлеб гречневый",p:"60 г",prod:"хлеб гречневый"}]},
+   {label:"Обед",dishes:[
+     {t:"Филе бедра куриное запечённое",p:"175 г",prod:"куриное бедро (филе), специи"},
+     {t:"Гречка",p:"200 г",prod:"гречка"},
+     {t:"Брокколи",p:"150 г",prod:"брокколи"}]},
+   {label:"Перекус",dishes:[
+     {t:"Греч. йогурт 2%",p:"200 г",prod:"греческий йогурт 2%"},
+     {t:"Сыр X-TRA FIT 20%",p:"30 г",prod:"сыр X-TRA FIT"},
+     {t:"Ягоды",p:"100 г",prod:"голубика / клубника"},
+     {t:"Банан",p:"1 шт",prod:"банан"}]},
+   {label:"Ужин",dishes:[
+     {t:"Индейка духовая запечённая",p:"155 г",prod:"филе индейки, специи"},
+     {t:"Картофель запечённый",p:"240 г",prod:"картофель"},
+     {t:"Салат огурцы-помидоры с йогуртом",p:"",prod:"огурцы, помидоры, греч. йогурт"},
+     {t:"Спортхлеб",p:"1 ломт.",prod:"спортхлеб BB"}]}
+ ]},
+ {day:"Суббота",sh:"СБ",type:"rest",tlabel:"Отдых",kcal:2239,protein:180,meals:[
+   {label:"Завтрак",dishes:[
+     {t:"Омлет с сыром",p:"побольше",prod:"яйца, сыр, молоко"},
+     {t:"Хлеб гречневый",p:"60 г",prod:"хлеб гречневый"},
+     {t:"Банан",p:"1 шт",prod:"банан"},
+     {t:"Спортхлеб",p:"1 ломт.",prod:"спортхлеб BB"}]},
+   {label:"Обед",dishes:[
+     {t:"Креветки варёные",p:"170 г мяса",prod:"креветки"},
+     {t:"Рис отварной",p:"240 г",prod:"рис"},
+     {t:"Огурец + черри",p:"",prod:"огурец, помидоры черри"}]},
+   {label:"Перекус",dishes:[
+     {t:"Творожная миска",p:"побольше",prod:"творог 2%, греч. йогурт, ягоды"},
+     {t:"Банан",p:"1 шт",prod:"банан"},
+     {t:"Ягоды",p:"100 г",prod:"голубика / клубника"}]},
+   {label:"Ужин",dishes:[
+     {t:"Куриная грудка в специях",p:"180 г",prod:"куриная грудка, специи"},
+     {t:"Макароны высокобелковые",p:"215 г",prod:"макароны Макфа высокобелковые"},
+     {t:"Салат огурцы-помидоры с йогуртом",p:"",prod:"огурцы, помидоры, греч. йогурт"}]}
+ ]},
+ {day:"Воскресенье",sh:"ВС",type:"rest",tlabel:"Отдых",kcal:2268,protein:182,meals:[
+   {label:"Завтрак",dishes:[
+     {t:"Творог 2%",p:"200 г",prod:"творог 2%"},
+     {t:"Яйца варёные",p:"2 шт",prod:"яйца"},
+     {t:"Хлопья кукурузные",p:"50 г",prod:"хлопья без сахара"},
+     {t:"Хлеб гречневый",p:"50 г",prod:"хлеб гречневый"},
+     {t:"Банан",p:"1 шт",prod:"банан"}]},
+   {label:"Обед",dishes:[
+     {t:"Лосось запечённый",p:"170 г",prod:"лосось (стейк)"},
+     {t:"Картофель запечённый",p:"220 г",prod:"картофель"},
+     {t:"Брокколи",p:"150 г",prod:"брокколи"}]},
+   {label:"Перекус",dishes:[
+     {t:"Греч. йогурт 2%",p:"200 г",prod:"греческий йогурт 2%"},
+     {t:"Ягоды",p:"100 г",prod:"голубика / клубника"},
+     {t:"Банан",p:"1 шт",prod:"банан"},
+     {t:"Кефир 1%",p:"250 мл",prod:"кефир 1%"}]},
+   {label:"Ужин",dishes:[
+     {t:"Филе бедра куриное запечённое",p:"200 г",prod:"куриное бедро (филе), специи"},
+     {t:"Гречка",p:"175 г",prod:"гречка"},
+     {t:"Цветная капуста",p:"",prod:"цветная капуста"}]}
+ ]}
+];
+
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+const tabsBox=document.getElementById("tabs");
+const panelsBox=document.getElementById("panels");
+
+WEEK.forEach((d,i)=>{
+  // таб
+  const tab=el("button","tab",d.sh);
+  tab.type="button";tab.setAttribute("role","tab");tab.id="tab"+i;
+  tab.setAttribute("aria-controls","panel"+i);
+  tab.style.setProperty("--tc",`var(--${d.type})`);
+  tab.addEventListener("click",()=>select(i));
+  tabsBox.appendChild(tab);
+
+  // панель
+  const panel=el("section","panel");panel.id="panel"+i;
+  panel.setAttribute("role","tabpanel");panel.setAttribute("aria-labelledby","tab"+i);
+  panel.style.setProperty("--dc",`var(--${d.type})`);
+  panel.style.setProperty("--dc-soft",`var(--${d.type}-soft)`);
+
+  const head=el("div","dhead");
+  const left=el("div");
+  left.appendChild(el("div","dname",d.day));
+  left.appendChild(el("div","dtype",d.tlabel));
+  const mac=el("div","macros");
+  mac.appendChild(el("div","kc",d.kcal+" ккал"));
+  mac.appendChild(el("div","pr","белок "+d.protein+" г"));
+  head.appendChild(left);head.appendChild(mac);panel.appendChild(head);
+
+  const meals=el("div","meals");
+  d.meals.forEach(m=>{
+    const mb=el("div","meal");
+    const lab=el("div","mlabel");
+    lab.appendChild(el("span",null,m.label));
+    if(m.sub)lab.appendChild(el("span","sub","· "+m.sub));
+    if(m.batch)lab.appendChild(el("span","batch","⟵ "+m.batch));
+    mb.appendChild(lab);
+    m.dishes.forEach(x=>{
+      const dish=el("div","dish");
+      const line=el("div","dishline");
+      line.appendChild(el("span","t",x.t));
+      if(x.p)line.appendChild(el("span","p",x.p));
+      dish.appendChild(line);
+      if(x.leftover)dish.appendChild(el("div","src",x.leftover));
+      else if(x.prod)dish.appendChild(el("div","prod",x.prod));
+      mb.appendChild(dish);
+    });
+    meals.appendChild(mb);
+  });
+  panel.appendChild(meals);
+  panelsBox.appendChild(panel);
+});
+
+function select(i){
+  document.querySelectorAll(".tab").forEach((t,j)=>t.setAttribute("aria-selected",String(j===i)));
+  document.querySelectorAll(".panel").forEach((p,j)=>p.classList.toggle("active",j===i));
+}
+
+// клавиши-стрелки по вкладкам
+tabsBox.addEventListener("keydown",e=>{
+  const tabs=[...document.querySelectorAll(".tab")];
+  const cur=tabs.findIndex(t=>t.getAttribute("aria-selected")==="true");
+  if(e.key==="ArrowRight"||e.key==="ArrowLeft"){
+    e.preventDefault();
+    const n=(cur+(e.key==="ArrowRight"?1:6))%7;
+    select(n);tabs[n].focus();
+  }
+});
+
+// старт — сегодняшний день (ПН..ВС = 0..6)
+const today=(new Date().getDay()+6)%7;
+select(today);
+
+// переключатель продуктов
+const root=document.documentElement;
+const btn=document.getElementById("prodToggle");
+const lbl=document.getElementById("prodLabel");
+btn.addEventListener("click",()=>{
+  const hidden=root.classList.toggle("hide-prod");
+  btn.setAttribute("aria-pressed",String(!hidden));
+  lbl.textContent=hidden?"продукты скрыты":"продукты";
+});
+</script>
+</body>
+</html>
