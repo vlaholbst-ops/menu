@@ -3,139 +3,321 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="description" content="Личное меню Владимира на 7 дней без рыбы">
-  <title>Меню Владимира · 7 дней</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23152138'/%3E%3Cpath d='M19 15v16c0 5 3 8 8 8V15M23 15v24M45 15c-7 2-10 8-10 15v8h10V15zm0 23v12' fill='none' stroke='%23f6bd4f' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <meta name="description" content="Личное меню Владимира на неделю">
+  <title>Меню Владимира</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     :root{
-      --navy:#152138;--navy-2:#233451;--cream:#f7f3ea;--paper:#fffdf8;--ink:#182033;
-      --muted:#687185;--line:#dfe2e7;--gold:#f6bd4f;--gold-soft:#fff1c9;
-      --berry:#ad3154;--berry-soft:#f9e7ec;--green:#28745d;--green-soft:#e2f2ec;
-      --shadow:0 16px 36px rgba(21,33,56,.10);--radius:20px;
+      --navy:#152138;--paper:#fffdf8;--cream:#f7f3ea;--ink:#182033;--muted:#697287;
+      --line:#dfe2e7;--gold:#f6bd4f;--green:#28745d;--green-soft:#e2f2ec;
+      --berry:#ad3154;--danger:#a83b3b;--shadow:0 10px 28px rgba(21,33,56,.08);
       --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
       --mono:"SFMono-Regular",Consolas,monospace;
     }
-    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--sans);line-height:1.45;-webkit-font-smoothing:antialiased}
-    button{font:inherit}button:focus-visible,summary:focus-visible{outline:3px solid rgba(246,189,79,.75);outline-offset:3px}
-    .shell{max-width:1120px;margin:0 auto;padding:22px 20px 64px}
-    .mast{background:var(--navy);color:white;border-radius:28px;padding:24px 26px;box-shadow:var(--shadow);display:grid;grid-template-columns:1fr auto;gap:18px;align-items:end}
-    .eyebrow{margin:0 0 8px;color:var(--gold);font-size:.78rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
-    h1{margin:0;font-size:clamp(1.8rem,4vw,3rem);line-height:1.02;letter-spacing:-.04em;max-width:650px}
-    .mast p{margin:12px 0 0;color:#c9d2e2;max-width:680px;font-size:1rem}
-    .targets{display:grid;grid-template-columns:repeat(2,minmax(118px,1fr));gap:10px}
-    .target{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);border-radius:16px;padding:12px 14px;min-width:125px}
-    .target b{display:block;color:var(--gold);font:800 1.1rem var(--mono)}.target span{font-size:.77rem;color:#c9d2e2}
-    .statusline{display:flex;gap:8px;flex-wrap:wrap;margin:16px 2px 0}
-    .pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:7px 11px;color:var(--muted);font-size:.82rem;font-weight:700}
-    .pill strong{color:var(--ink)}.dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
-    .viewbar{position:sticky;top:0;z-index:8;background:rgba(247,243,234,.94);backdrop-filter:blur(14px);padding:16px 0 12px;margin-top:8px;border-bottom:1px solid rgba(104,113,133,.16)}
-    .viewtabs{display:flex;gap:8px}.viewtab{border:1px solid var(--line);background:var(--paper);color:var(--muted);border-radius:12px;padding:10px 16px;font-weight:800;cursor:pointer}.viewtab[aria-selected="true"]{background:var(--navy);border-color:var(--navy);color:white}
-    .view{display:none}.view.active{display:block}
-    .days{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:18px 0 14px}.daytab{border:1px solid var(--line);background:var(--paper);color:var(--muted);border-radius:14px;padding:10px 5px;cursor:pointer;font-weight:850}.daytab[aria-selected="true"]{background:var(--gold);border-color:var(--gold);color:var(--navy)}
-    .workspace{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start}.summary,.meals,.recipe{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 8px 22px rgba(21,33,56,.05)}
-    .summary{padding:20px;position:sticky;top:82px}.dayname{font-size:1.65rem;font-weight:900;letter-spacing:-.035em}.daytype{color:var(--berry);font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;font-weight:850;margin-top:4px}
-    .ring{width:148px;height:148px;border-radius:50%;margin:22px auto 18px;display:grid;place-items:center;background:conic-gradient(var(--green) 0 96%,var(--line) 96%);position:relative}.ring:after{content:"";position:absolute;inset:13px;background:var(--paper);border-radius:50%}.ringtext{position:relative;z-index:1;text-align:center}.ringtext b{display:block;font:900 1.55rem var(--mono)}.ringtext span{font-size:.76rem;color:var(--muted)}
-    .metric{margin-top:14px}.metricline{display:flex;justify-content:space-between;gap:8px;font-size:.82rem;font-weight:800}.metricline span:last-child{font-family:var(--mono)}.track{height:8px;background:#eceef1;border-radius:99px;overflow:hidden;margin-top:7px}.fill{height:100%;border-radius:inherit;background:var(--green)}.fill.protein{background:var(--berry)}
-    .rule{font-size:.78rem;color:var(--muted);margin:18px 0 0;padding-top:15px;border-top:1px solid var(--line)}
-    .meals{padding:8px}.meal{padding:16px 17px;border-radius:15px}.meal+.meal{border-top:1px solid var(--line)}.mealhead{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.mealname{font-weight:900;font-size:1.05rem}.mealmeta{font:700 .8rem var(--mono);color:var(--muted);white-space:nowrap}.dish{margin-top:6px;font-size:.97rem}.items{margin:9px 0 0;padding:0;display:flex;gap:6px;flex-wrap:wrap;list-style:none}.items li{background:#f0f2f5;color:#586175;border-radius:8px;padding:4px 7px;font-size:.76rem}.source{display:inline-flex;margin-top:10px;padding:5px 8px;border-radius:8px;background:var(--green-soft);color:var(--green);font-size:.72rem;font-weight:850}.source.estimate{background:var(--gold-soft);color:#79560f}
-    .sectionhead{display:flex;justify-content:space-between;gap:12px;align-items:end;margin:22px 0 12px}.sectionhead h2{margin:0;font-size:1.55rem;letter-spacing:-.03em}.sectionhead p{margin:4px 0 0;color:var(--muted)}
-    .recipes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.recipe{overflow:hidden}.recipe img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}.recipebody{padding:16px}.recipe h3{margin:0;font-size:1.08rem}.recipe .kpi{margin-top:7px;color:var(--berry);font:800 .79rem var(--mono)}details{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}summary{cursor:pointer;color:var(--navy-2);font-weight:850;font-size:.84rem}.ingredients{padding-left:18px;color:var(--muted);font-size:.86rem}.ingredients li{margin:4px 0}
-    .backup{margin-top:18px;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 8px 22px rgba(21,33,56,.05)}.backup h2{margin:0 0 4px;font-size:1.25rem}.backup>p{margin:0;color:var(--muted);font-size:.86rem}.backupgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:13px}.backupitem{border:1px solid var(--line);border-radius:13px;padding:11px;background:#faf9f5}.backupitem b{display:block;font-size:.87rem}.backupitem span{display:block;color:var(--berry);font:800 .76rem var(--mono);margin-top:4px}
-    .note{margin-top:18px;background:var(--navy);color:#d8deea;border-radius:18px;padding:16px 18px;font-size:.88rem}.note b{color:var(--gold)}
-    footer{margin-top:24px;color:var(--muted);text-align:center;font-size:.78rem}
-    @media(max-width:760px){.shell{padding:12px 12px 44px}.mast{grid-template-columns:1fr;padding:20px;border-radius:22px}.targets{grid-template-columns:repeat(2,1fr)}.days{overflow-x:auto;grid-template-columns:repeat(7,54px);padding-bottom:4px}.workspace{grid-template-columns:1fr}.summary{position:static;display:grid;grid-template-columns:1fr 140px;gap:8px 16px}.ring{grid-column:2;grid-row:1/4;margin:0;width:126px;height:126px}.rule{grid-column:1/-1}.recipes{grid-template-columns:1fr}.backupgrid{grid-template-columns:repeat(2,1fr)}.viewbar{top:0}.mealhead{align-items:baseline}}
-    @media(max-width:430px){.summary{display:block}.ring{margin:18px auto}.target{min-width:0;padding:10px}.mast p{font-size:.92rem}}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--sans);line-height:1.45;-webkit-font-smoothing:antialiased}
+    button,textarea{font:inherit}
+    button:focus-visible,summary:focus-visible,textarea:focus-visible{outline:3px solid rgba(246,189,79,.78);outline-offset:3px}
+    .shell{max-width:820px;margin:0 auto;padding:14px 16px 120px}
+    .dayswrap{position:sticky;top:0;z-index:10;background:rgba(247,243,234,.94);backdrop-filter:blur(14px);padding:10px 0 12px}
+    .days{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+    .daytab{border:1px solid var(--line);background:var(--paper);color:var(--muted);border-radius:13px;padding:11px 5px;cursor:pointer;font-weight:850}
+    .daytab[aria-selected="true"]{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+    .datehint{margin:8px 2px 0;color:var(--muted);font-size:.76rem}
+    .meals{display:grid;gap:12px;margin-top:4px}
+    .meal{background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;transition:border-color .16s,opacity .16s}
+    .meal.eaten{border-color:#9ecfbd}
+    .mealmain{display:grid;grid-template-columns:46px 1fr auto;gap:12px;align-items:start;padding:17px}
+    .check{width:42px;height:42px;border:2px solid #aeb5c1;border-radius:13px;background:white;color:transparent;cursor:pointer;font-size:1.35rem;font-weight:900;line-height:1}
+    .check[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:white}
+    .mealname{font-size:.75rem;color:var(--berry);font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+    .dish{margin-top:3px;font-size:1.06rem;font-weight:850}
+    .macros{font:800 .76rem var(--mono);color:var(--muted);white-space:nowrap;padding-top:3px}
+    details{border-top:1px solid var(--line)}
+    summary{list-style:none;cursor:pointer;padding:13px 17px;color:var(--navy);font-size:.86rem;font-weight:850}
+    summary::-webkit-details-marker{display:none}
+    summary:before{content:"＋";display:inline-block;width:22px;color:var(--green);font-weight:900}
+    details[open] summary:before{content:"−"}
+    .recipe{padding:0 17px 17px;display:grid;grid-template-columns:1fr;gap:12px}
+    .recipe.withphoto{grid-template-columns:145px 1fr}
+    .recipe img{width:145px;height:145px;object-fit:cover;border-radius:13px}
+    .recipe h3{margin:0 0 6px;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+    .recipe ul{margin:0;padding-left:18px;color:#555f73;font-size:.87rem}
+    .recipe li{margin:4px 0}
+    .method{margin:10px 0 0;font-size:.86rem;color:#555f73}
+    .source{display:inline-block;margin-top:10px;padding:4px 7px;border-radius:7px;background:var(--green-soft);color:var(--green);font-size:.7rem;font-weight:850}
+    .source.estimate{background:#fff1c9;color:#79560f}
+    .savebox{margin-top:16px;background:var(--navy);color:white;border-radius:20px;padding:18px;box-shadow:var(--shadow)}
+    .savebox label{display:block;font-size:.82rem;font-weight:850;margin-bottom:7px}
+    textarea{display:block;width:100%;min-height:92px;resize:vertical;border:1px solid rgba(255,255,255,.18);border-radius:13px;padding:12px;background:rgba(255,255,255,.08);color:white}
+    textarea::placeholder{color:#aeb8ca}
+    .actions{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:12px}
+    #saveDay{border:0;border-radius:13px;background:var(--gold);color:var(--navy);padding:13px 16px;font-weight:900;cursor:pointer}
+    #saveDay:disabled{opacity:.62;cursor:wait}
+    .journal{display:grid;place-items:center;border:1px solid rgba(255,255,255,.2);border-radius:13px;color:white;text-decoration:none;padding:0 15px;font-weight:800;font-size:.82rem}
+    .syncstate{min-height:18px;margin:10px 1px 0;color:#cbd3e1;font-size:.76rem}
+    .syncstate.bad{color:#ffb7b7}
+    .toast{position:fixed;left:50%;bottom:24px;z-index:30;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#111a2c;color:white;border-radius:12px;padding:11px 15px;box-shadow:var(--shadow);transition:.2s;white-space:nowrap;font-size:.84rem}
+    .toast.on{opacity:1;transform:translate(-50%,0)}
+    @media(max-width:620px){
+      .shell{padding:8px 10px 110px}.days{overflow-x:auto;grid-template-columns:repeat(7,54px);padding-bottom:2px}
+      .mealmain{grid-template-columns:42px 1fr;gap:10px;padding:14px}.macros{grid-column:2;padding:0}.recipe.withphoto{grid-template-columns:1fr}.recipe img{width:100%;height:auto;aspect-ratio:16/10}.actions{grid-template-columns:1fr}.journal{min-height:44px}.toast{max-width:calc(100vw - 24px);white-space:normal;text-align:center}
+    }
   </style>
 </head>
 <body>
 <div class="shell">
-  <header class="mast">
-    <div><p class="eyebrow">Личный план · версия 1</p><h1>Нормальная еда на неделю. Без рыбы.</h1><p>Четыре приёма пищи, реальные блюда из вашей базы и рецептов жены. Калории держим в рабочем коридоре, белок — не ниже цели.</p></div>
-    <div class="targets"><div class="target"><b>2100–2250</b><span>ккал в день</span></div><div class="target"><b>≥160 г</b><span>белка в день</span></div></div>
-  </header>
-  <div class="statusline"><span class="pill"><span class="dot"></span><strong>0</strong> рыбных блюд</span><span class="pill"><strong>4</strong> приёма пищи</span><span class="pill">икра — только замена</span></div>
-
-  <nav class="viewbar" aria-label="Разделы"><div class="viewtabs" role="tablist"><button class="viewtab" id="planTab" role="tab" aria-selected="true" aria-controls="planView">Неделя</button><button class="viewtab" id="recipeTab" role="tab" aria-selected="false" aria-controls="recipeView">Рецепты</button></div></nav>
-
+  <nav class="dayswrap" aria-label="Дни меню">
+    <div class="days" id="dayTabs" role="tablist"></div>
+    <p class="datehint" id="dateHint"></p>
+  </nav>
   <main>
-    <section class="view active" id="planView" role="tabpanel" aria-labelledby="planTab">
-      <div class="days" id="dayTabs" role="tablist" aria-label="Дни недели"></div>
-      <div class="workspace"><aside class="summary" id="summary"></aside><section class="meals" id="meals" aria-live="polite"></section></div>
-      <section class="backup"><h2>Белковая страховка</h2><p>По плану она не нужна: каждый день уже выше 160 г. Используйте только если реальная порция основного блюда оказалась меньше.</p><div class="backupgrid"><div class="backupitem"><b>Творог 2% · 150 г</b><span>152 ккал · Б 26 г</span></div><div class="backupitem"><b>Греческий йогурт · 200 г</b><span>120 ккал · Б 18 г</span></div><div class="backupitem"><b>Куриная грудка · 100 г</b><span>165 ккал · Б 31 г</span></div><div class="backupitem"><b>2 яйца</b><span>155 ккал · Б 13 г</span></div></div></section>
-      <div class="note"><b>Почему не 2500 ккал:</b> в базе зафиксировано, что при 2000–2200 ккал вес снижался примерно на 0,5 кг в неделю, а расчётный расход мог быть завышен. Поэтому здесь рабочий, а не теоретический коридор. Итоги дня — плановая оценка, не медицинское назначение; рецепты с жёлтой меткой уточняем после первой готовки по фактическому выходу, маслу и соусам.</div>
-    </section>
-    <section class="view" id="recipeView" role="tabpanel" aria-labelledby="recipeTab">
-      <div class="sectionhead"><div><h2>Блюда недели</h2><p>Граммовки из файла жены и карточек базы. КБЖУ с пометкой «оценка» требуют уточнения выхода готового блюда.</p></div></div>
-      <div class="recipes" id="recipes"></div>
+    <section class="meals" id="meals" aria-live="polite"></section>
+    <section class="savebox">
+      <label for="comment">Комментарий к дню</label>
+      <textarea id="comment" placeholder="Например: ужин не ел, вместо него была шаурма."></textarea>
+      <div class="actions">
+        <button id="saveDay" type="button">Синхронизировать день</button>
+        <a class="journal" href="https://docs.google.com/spreadsheets/d/1BRNnPLaVh2a_9HHAKvLXgrDgGITnq5c5qW7u2fAqNzk/edit" target="_blank" rel="noopener">Журнал</a>
+      </div>
+      <p class="syncstate" id="syncState" role="status" aria-live="polite"></p>
     </section>
   </main>
-  <footer>Локальный черновик · 17.09.2026 · КБЖУ округлены до целых</footer>
 </div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-const WEEK=[
- {short:"ПН",day:"Понедельник",type:"Силовая · после тренировки",kcal:2220,protein:195,meals:[
-  {name:"Завтрак",dish:"Творожно-сырные вафли с йогуртом и ягодами",kcal:562,protein:57,items:["вафли 220 г","йогурт 150 г","ягоды 100 г"],source:"База · расчёт по рецепту"},
-  {name:"Обед",dish:"Курица с фунчозой и овощами",kcal:540,protein:50,items:["куриное филе 200 г","фунчоза 50 г сух.","овощи","соевый соус"],estimate:true},
-  {name:"Второй обед",dish:"Большая творожная миска, банан и хлеб",kcal:538,protein:41,items:["творог + йогурт + ягоды","банан","хлеб 50 г"],source:"База"},
-  {name:"Ужин",dish:"Куриные котлеты с брокколи, рисом и салатом",kcal:580,protein:47,items:["котлеты 1/3 рецепта","рис 170 г","салат 150 г"],estimate:true}]},
- {short:"ВТ",day:"Вторник",type:"Офис · кардио",kcal:2237,protein:174,meals:[
-  {name:"Завтрак",dish:"Омлет с индюшиной ветчиной и сыром",kcal:584,protein:42,items:["2 яйца","ветчина 30 г","лёгкий сыр 30 г","хлеб 100 г"],estimate:true},
-  {name:"Обед",dish:"Куриный «бочонок» с грибами, гречкой и салатом",kcal:630,protein:49,items:["бочонок 1/4 рецепта","гречка 200 г","салат 150 г"],estimate:true},
-  {name:"Второй обед",dish:"Творожная миска и банан",kcal:398,protein:36,items:["творожная миска","банан"],source:"База"},
-  {name:"Ужин",dish:"Куриный кебаб с печёным картофелем и салатом",kcal:625,protein:47,items:["кебаб 200 г","картофель 220 г","салат 150 г"],estimate:true}]},
- {short:"СР",day:"Среда",type:"Силовая · после тренировки",kcal:2185,protein:187,meals:[
-  {name:"Завтрак",dish:"Маковые панкейки с греческим йогуртом",kcal:610,protein:44,items:["панкейки 1/2 рецепта","йогурт 200 г"],estimate:true},
-  {name:"Обед",dish:"Шаурма с курицей и лёгким сыром",kcal:645,protein:67,items:["лаваш 70 г","курица 150 г","сыр 60 г","овощи + соус"],source:"База"},
-  {name:"Второй обед",dish:"Йогурт, банан и орехи",kcal:375,protein:28,items:["йогурт 250 г","банан","орехи 25 г"],source:"База"},
-  {name:"Ужин",dish:"Куриные тефтели с белковой пастой и салатом",kcal:555,protein:48,items:["тефтели 1/4 рецепта","паста 167 г","салат 150 г"],estimate:true}]},
- {short:"ЧТ",day:"Четверг",type:"Офис · кардио",kcal:2161,protein:181,meals:[
-  {name:"Завтрак",dish:"Сырники с йогуртом и ягодами",kcal:450,protein:46,items:["сырники 1/2 рецепта","йогурт 100 г","ягоды 100 г"],estimate:true},
-  {name:"Обед",dish:"Котлеты из индейки с булгуром и салатом",kcal:527,protein:47,items:["котлеты 200 г","булгур 108 г","салат 150 г"],source:"База"},
-  {name:"Второй обед",dish:"Половина порции бутербродов с индейкой и фрукт",kcal:420,protein:31,items:["бутерброды 1/2 порции","яблоко или груша"],source:"База"},
-  {name:"Ужин",dish:"Куриные кармашки с белковой пастой и салатом",kcal:764,protein:57,items:["кармашки 150 г","паста 167 г","салат 150 г","хлеб 50 г"],source:"База"}]},
- {short:"ПТ",day:"Пятница",type:"Силовая · после тренировки",kcal:2133,protein:204,meals:[
-  {name:"Завтрак",dish:"Шоколадные вафли с творогом",kcal:629,protein:56,items:["вафли 1/2 рецепта","творог 200 г"],estimate:true},
-  {name:"Обед",dish:"Рубленые куриные котлеты с булгуром и салатом",kcal:587,protein:59,items:["котлеты 200 г","булгур 108 г","салат 150 г"],estimate:true},
-  {name:"Второй обед",dish:"Творожная миска и банан",kcal:398,protein:36,items:["творожная миска","банан"],source:"База"},
-  {name:"Ужин",dish:"Куриная грудка с рисом и брокколи",kcal:519,protein:53,items:["грудка 150 г","рис 170 г","брокколи 150 г"],source:"База"}]},
- {short:"СБ",day:"Суббота",type:"Кардио · свободный график",kcal:2206,protein:173,meals:[
-  {name:"Завтрак",dish:"Лаваш с индюшиной ветчиной, сыром и яйцами",kcal:625,protein:49,items:["лаваш 1 шт.","ветчина 60 г","сыр 60 г","2 яйца","овощи"],estimate:true},
-  {name:"Обед",dish:"Куриный кебаб с печёным картофелем и салатом",kcal:625,protein:47,items:["кебаб 200 г","картофель 220 г","салат 150 г"],estimate:true},
-  {name:"Второй обед",dish:"Йогурт, банан и орехи",kcal:375,protein:28,items:["йогурт 250 г","банан","орехи 25 г"],source:"База"},
-  {name:"Ужин",dish:"Котлеты из индейки с гречкой и салатом",kcal:581,protein:49,items:["котлеты 200 г","гречка 200 г","салат 150 г"],source:"База"}]},
- {short:"ВС",day:"Воскресенье",type:"Отдых · восстановление",kcal:2195,protein:193,meals:[
-  {name:"Завтрак",dish:"Творожно-сырные вафли с йогуртом и ягодами",kcal:562,protein:57,items:["вафли 220 г","йогурт 150 г","ягоды 100 г"],source:"База · расчёт по рецепту"},
-  {name:"Обед",dish:"Салат «Цезарь» с курицей и хлебом",kcal:549,protein:47,items:["цезарь 220 г","хлеб 100 г"],source:"База"},
-  {name:"Второй обед",dish:"Творог с йогуртом, ягодами и бананом",kcal:367,protein:37,items:["творог 150 г","йогурт 100 г","ягоды 100 г","банан"],source:"База"},
-  {name:"Ужин",dish:"Куриный «бочонок» с грибами, булгуром и салатом",kcal:717,protein:52,items:["бочонок 1/4 рецепта","булгур 108 г","салат 150 г","хлеб 50 г"],estimate:true}]}
-];
+(function(){
+  "use strict";
 
-const RECIPES=[
- {name:"Творожно-сырные вафли",kcal:"192 ккал · Б 19 г / 100 г",source:"База",img:"assets/savory-waffles.jpg",ingredients:["творог 145 г","сыр лёгкий 120 г","2 яйца","цельнозерновая мука 100 г","молоко 100 мл"]},
- {name:"Курица с фунчозой",kcal:"≈540 ккал · Б ≈50 г / порция",source:"Оценка",img:"assets/funchose.jpg",ingredients:["куриное филе 200 г","фунчоза 50 г","морковь","огурец","болгарский перец","соевый соус","кунжут"]},
- {name:"Котлеты с брокколи и морковью",kcal:"≈300 ккал · Б ≈40 г / ⅓ рецепта",source:"Оценка",img:"assets/chicken-patties.jpg",ingredients:["куриный фарш 600 г","брокколи 100 г","морковь 100 г","соль"]},
- {name:"Омлет с ветчиной и сыром",kcal:"≈360 ккал · Б ≈30 г",source:"Оценка",img:"assets/omelet.jpg",ingredients:["2 яйца","индюшиная ветчина 30 г","лёгкий сыр 30 г"]},
- {name:"Куриный «бочонок» с грибами",kcal:"≈370 ккал · Б ≈43 г / ¼ рецепта",source:"Оценка",img:"assets/chicken-barrel.jpg",ingredients:["куриный фарш 800 г","грибы в греческом йогурте 200 г","лёгкий сыр 100 г","панировочные сухари 50 г"]},
- {name:"Куриный кебаб",kcal:"≈355 ккал · Б ≈42 г / 200 г",source:"Оценка",ingredients:["филе куриного бедра 500 г","репчатый лук","соль и специи"]},
- {name:"Маковые панкейки",kcal:"≈490 ккал · Б ≈26 г / ½ рецепта",source:"Оценка",img:"assets/pancakes.jpg",ingredients:["мягкий творог 140 г","2 яйца","рисовая мука 70 г","мак","разрыхлитель","сахзам"]},
- {name:"Шаурма с курицей",kcal:"645 ккал · Б 67 г",source:"База",ingredients:["лаваш 70 г","курица 150 г","лёгкий сыр 60 г","огурец 60 г","помидор 60 г","соус на йогурте"]},
- {name:"Куриные тефтели",kcal:"≈220 ккал · Б ≈30 г / ¼ рецепта",source:"Оценка",img:"assets/meatballs.jpg",ingredients:["куриная грудка 400 г","готовый рис 100 г","томатная паста 2 ст. л."]},
- {name:"Сырники",kcal:"≈330 ккал · Б ≈36 г / ½ рецепта",source:"Оценка",img:"assets/syrniki.jpg",ingredients:["творог 5% 400 г","желток 1 шт.","рисовая мука 30 г","сахарная пудра 10 г","сахзам","ванилин"]},
- {name:"Куриные кармашки",kcal:"289 ккал · Б 34 г / 150 г",source:"База",ingredients:["готовое блюдо из карточки базы","порция 150 г"]},
- {name:"Шоколадные вафли",kcal:"≈427 ккал · Б ≈22 г / ½ рецепта",source:"Оценка",img:"assets/chocolate-waffles.jpg",ingredients:["греческий йогурт 150 г","2 яйца","рисовая мука 60 г","какао 1 ст. л.","сахзам"]},
- {name:"Рубленые куриные котлеты",kcal:"≈437 ккал · Б ≈53 г / 200 г",source:"Оценка",ingredients:["куриное филе 500 г","лук","морковь","масло гхи — взвесить"]},
- {name:"Лаваш с ветчиной, сыром и яйцами",kcal:"≈565 ккал · Б ≈46 г",source:"Оценка",ingredients:["круглый лаваш 1 шт.","индюшиная ветчина 60 г","лёгкий сыр 60 г","2 яйца"]},
- {name:"Салат «Цезарь» с курицей",kcal:"325 ккал · Б 39 г / 220 г",source:"База",ingredients:["готовое блюдо из карточки базы","порция 220 г"]}
-];
+  var RECIPES={
+    savoryWaffles:{source:"Оценка по рецепту жены",img:"assets/savory-waffles.jpg",ingredients:["На весь замес: творог 120 г","2 яйца","молоко 100 мл","мука 120 г","лёгкий сыр 100 г"],method:"Смешать ингредиенты до густого теста и выпекать порциями в вафельнице до румяности."},
+    funchose:{source:"Оценка по рецепту жены",img:"assets/funchose.jpg",ingredients:["Куриное филе 200 г","фунчоза 50 г в сухом виде","морковь, огурец и болгарский перец","соевый соус","кунжут"],method:"Филе обжарить без лишнего масла, фунчозу приготовить по упаковке, соединить с овощами и соусом."},
+    cottageBowl:{source:"База",ingredients:["Творог 2%","греческий йогурт 2%","ягоды","добавки из указанной порции"],method:"Смешать творог с йогуртом, добавить ягоды. Банан и хлеб есть отдельно."},
+    chickenPatties:{source:"Оценка по рецепту жены",img:"assets/chicken-patties.jpg",ingredients:["На весь замес: куриный фарш 600 г","брокколи 100 г","морковь 100 г","соль"],method:"Измельчить овощи, смешать с фаршем, сформовать котлеты и запечь либо обжарить без неучтённого масла."},
+    omelet:{source:"Оценка по рецепту жены",img:"assets/omelet.jpg",ingredients:["2 яйца","индюшиная ветчина 30 г","лёгкий сыр 30 г"],method:"Ветчину прогреть, залить яйцами, добавить сыр и готовить под крышкой."},
+    barrel:{source:"Оценка по рецепту жены",img:"assets/chicken-barrel.jpg",ingredients:["На весь замес: куриный фарш 800 г","грибы в греческом йогурте 200 г","лёгкий сыр 100 г","панировочные сухари 50 г"],method:"Сформовать из фарша основу, вложить грибы, присыпать сыром и сухарями, запечь до готовности."},
+    kebab:{source:"Оценка по рецепту жены",ingredients:["Филе куриного бедра 500 г","репчатый лук","соль и специи"],method:"Измельчить филе с луком, сформовать кебабы и запечь или приготовить на гриле без неучтённого масла."},
+    poppyPancakes:{source:"Оценка по рецепту жены",img:"assets/pancakes.jpg",ingredients:["Мягкий творог 140 г","2 яйца","рисовая мука 70 г","мак","разрыхлитель, соль и сахзам"],method:"Смешать тесто и жарить небольшими панкейками на антипригарной поверхности."},
+    shawarma:{source:"База",ingredients:["Лаваш 70 г","курица 150 г","лёгкий сыр 60 г","огурец 60 г","помидор 60 г","соус: йогурт, горчица, кетчуп и немного оливкового масла"],method:"Собрать начинку в лаваше и подрумянить на сухой сковороде."},
+    yogurtSnack:{source:"База",ingredients:["Греческий йогурт 250 г","банан","орехи 25 г"],method:"Йогурт и банан съесть вместе, орехи добавить сверху или отдельно."},
+    meatballs:{source:"Оценка по рецепту жены",img:"assets/meatballs.jpg",ingredients:["На весь замес: куриная грудка 400 г","готовый рис 100 г","томатная паста 2 ст. л."],method:"Смешать измельчённую грудку с рисом, сформовать тефтели и потушить с томатной пастой."},
+    syrniki:{source:"Оценка по рецепту жены",img:"assets/syrniki.jpg",ingredients:["На 8 сырников: творог 5% 400 г","1 желток","рисовая мука 30 г","сахарная пудра 10 г","сахзам, соль и ванилин"],method:"Смешать массу, сформовать 8 сырников и приготовить на антипригарной поверхности."},
+    turkeyCutlets:{source:"База",ingredients:["Котлеты из индейки 200 г","гарнир и салат из указанной порции"],method:"Котлеты разогреть или приготовить привычным способом без добавочного масла, подать с гарниром."},
+    sandwiches:{source:"База",ingredients:["Зерновой хлеб","индейка","лёгкий сыр","фрукт по плану"],method:"Собрать бутерброды; в этот приём используется половина стандартной порции."},
+    chickenPockets:{source:"База",ingredients:["Куриные кармашки со шпинатом и рикоттой 150 г","белковая паста 167 г","салат 150 г","хлеб 50 г"],method:"Кармашки приготовить по сохранённой карточке базы, подать с пастой и салатом."},
+    chocolateWaffles:{source:"Оценка по рецепту жены",img:"assets/chocolate-waffles.jpg",ingredients:["На весь замес: греческий йогурт 150 г","2 яйца","рисовая мука 60 г","какао 1 ст. л.","сахзам и соль"],method:"Смешать тесто и выпекать в вафельнице. Творог съесть рядом как часть порции."},
+    choppedCutlets:{source:"Оценка по рецепту жены",ingredients:["Куриное филе 500 г","лук","морковь","масло гхи — обязательно взвесить"],method:"Филе мелко нарубить, смешать с овощами и обжарить котлетами на учтённом количестве гхи."},
+    chickenRice:{source:"База",ingredients:["Куриная грудка 150 г","готовый рис 170 г","брокколи 150 г"],method:"Грудку запечь или обжарить без неучтённого масла, подать с рисом и брокколи."},
+    lavashBreakfast:{source:"Оценка по рецепту жены",ingredients:["Круглый лаваш 1 шт.","индейка 60 г","лёгкий сыр 60 г","2 яйца","овощи"],method:"Выложить начинку в лаваш, свернуть и подрумянить на сухой сковороде."},
+    caesar:{source:"База",ingredients:["Салат «Цезарь» с курицей 220 г","хлеб 100 г"],method:"Собрать салат по карточке базы, хлеб подать отдельно."},
+    cottageFruit:{source:"База",ingredients:["Творог 150 г","греческий йогурт 100 г","ягоды 100 г","банан"],method:"Смешать творог с йогуртом и ягодами, банан добавить сверху или съесть отдельно."}
+  };
 
-const q=s=>document.querySelector(s);const qa=s=>[...document.querySelectorAll(s)];
-function view(name){const plan=name==="plan";q("#planView").classList.toggle("active",plan);q("#recipeView").classList.toggle("active",!plan);q("#planTab").setAttribute("aria-selected",plan);q("#recipeTab").setAttribute("aria-selected",!plan)}
-q("#planTab").onclick=()=>view("plan");q("#recipeTab").onclick=()=>view("recipes");
-function renderDay(i){const d=WEEK[i];qa(".daytab").forEach((b,j)=>b.setAttribute("aria-selected",j===i));const kcalPct=Math.min(100,Math.round(d.kcal/2250*100));const proteinPct=Math.min(100,Math.round(d.protein/160*100));q("#summary").innerHTML=`<div><div class="dayname">${d.day}</div><div class="daytype">${d.type}</div></div><div class="ring" style="background:conic-gradient(var(--green) 0 ${kcalPct}%,var(--line) ${kcalPct}%)"><div class="ringtext"><b>${d.kcal}</b><span>ккал за день</span></div></div><div class="metric"><div class="metricline"><span>Калории</span><span>${d.kcal} / 2250</span></div><div class="track"><div class="fill" style="width:${kcalPct}%"></div></div></div><div class="metric"><div class="metricline"><span>Белок</span><span>${d.protein} / 160 г</span></div><div class="track"><div class="fill protein" style="width:${proteinPct}%"></div></div></div><p class="rule">Белок уже закрыт едой. Протеиновый порошок в расчёт не заложен.</p>`;
-q("#meals").innerHTML=d.meals.map(m=>`<article class="meal"><div class="mealhead"><div><div class="mealname">${m.name}</div><div class="dish">${m.dish}</div></div><div class="mealmeta">${m.kcal} ккал · Б ${m.protein}</div></div><ul class="items">${m.items.map(x=>`<li>${x}</li>`).join("")}</ul><span class="source ${m.estimate?"estimate":""}">${m.estimate?"Оценка по ингредиентам":m.source}</span></article>`).join("")}
-const dayTabs=q("#dayTabs");WEEK.forEach((d,i)=>{const b=document.createElement("button");b.className="daytab";b.type="button";b.role="tab";b.textContent=d.short;b.setAttribute("aria-label",d.day);b.onclick=()=>renderDay(i);dayTabs.appendChild(b)});renderDay((new Date().getDay()+6)%7);
-q("#recipes").innerHTML=RECIPES.map(r=>`<article class="recipe">${r.img?`<img src="${r.img}" alt="${r.name}" loading="lazy">`:""}<div class="recipebody"><h3>${r.name}</h3><div class="kpi">${r.kcal}</div><details><summary>Ингредиенты · ${r.source}</summary><ul class="ingredients">${r.ingredients.map(x=>`<li>${x}</li>`).join("")}</ul></details></div></article>`).join("");
+  var WEEK=[
+    {short:"ПН",day:"Понедельник",meals:[
+      {name:"Завтрак",dish:"Творожно-сырные вафли с йогуртом и ягодами",kcal:562,protein:57,recipe:"savoryWaffles",portion:["вафли 220 г","йогурт 150 г","ягоды 100 г"]},
+      {name:"Обед",dish:"Курица с фунчозой и овощами",kcal:540,protein:50,recipe:"funchose",portion:["1 порция по рецепту"]},
+      {name:"Второй обед",dish:"Большая творожная миска, банан и хлеб",kcal:538,protein:41,recipe:"cottageBowl",portion:["творожная миска","банан","хлеб 50 г"]},
+      {name:"Ужин",dish:"Куриные котлеты с брокколи, рисом и салатом",kcal:580,protein:47,recipe:"chickenPatties",portion:["котлеты — ⅓ замеса","рис 170 г","салат 150 г"]}]},
+    {short:"ВТ",day:"Вторник",meals:[
+      {name:"Завтрак",dish:"Омлет с индюшиной ветчиной и сыром",kcal:584,protein:42,recipe:"omelet",portion:["омлет по рецепту","хлеб 100 г"]},
+      {name:"Обед",dish:"Куриный «бочонок» с грибами, гречкой и салатом",kcal:630,protein:49,recipe:"barrel",portion:["бочонок — ¼ замеса","гречка 200 г","салат 150 г"]},
+      {name:"Второй обед",dish:"Творожная миска и банан",kcal:398,protein:36,recipe:"cottageBowl",portion:["творожная миска","банан"]},
+      {name:"Ужин",dish:"Куриный кебаб с печёным картофелем и салатом",kcal:625,protein:47,recipe:"kebab",portion:["кебаб 200 г","картофель 220 г","салат 150 г"]}]},
+    {short:"СР",day:"Среда",meals:[
+      {name:"Завтрак",dish:"Маковые панкейки с греческим йогуртом",kcal:610,protein:44,recipe:"poppyPancakes",portion:["панкейки — ½ замеса","йогурт 200 г"]},
+      {name:"Обед",dish:"Шаурма с курицей и лёгким сыром",kcal:645,protein:67,recipe:"shawarma",portion:["1 шаурма по рецепту"]},
+      {name:"Второй обед",dish:"Йогурт, банан и орехи",kcal:375,protein:28,recipe:"yogurtSnack",portion:["1 порция по рецепту"]},
+      {name:"Ужин",dish:"Куриные тефтели с белковой пастой и салатом",kcal:555,protein:48,recipe:"meatballs",portion:["тефтели — ¼ замеса","паста 167 г","салат 150 г"]}]},
+    {short:"ЧТ",day:"Четверг",meals:[
+      {name:"Завтрак",dish:"Сырники с йогуртом и ягодами",kcal:450,protein:46,recipe:"syrniki",portion:["4 сырника","йогурт 100 г","ягоды 100 г"]},
+      {name:"Обед",dish:"Котлеты из индейки с булгуром и салатом",kcal:527,protein:47,recipe:"turkeyCutlets",portion:["котлеты 200 г","булгур 108 г","салат 150 г"]},
+      {name:"Второй обед",dish:"Половина порции бутербродов с индейкой и фрукт",kcal:420,protein:31,recipe:"sandwiches",portion:["бутерброды — ½ порции","яблоко или груша"]},
+      {name:"Ужин",dish:"Куриные кармашки с белковой пастой и салатом",kcal:764,protein:57,recipe:"chickenPockets",portion:["1 порция по рецепту"]}]},
+    {short:"ПТ",day:"Пятница",meals:[
+      {name:"Завтрак",dish:"Шоколадные вафли с творогом",kcal:629,protein:56,recipe:"chocolateWaffles",portion:["вафли — ½ замеса","творог 200 г"]},
+      {name:"Обед",dish:"Рубленые куриные котлеты с булгуром и салатом",kcal:587,protein:59,recipe:"choppedCutlets",portion:["котлеты 200 г","булгур 108 г","салат 150 г"]},
+      {name:"Второй обед",dish:"Творожная миска и банан",kcal:398,protein:36,recipe:"cottageBowl",portion:["творожная миска","банан"]},
+      {name:"Ужин",dish:"Куриная грудка с рисом и брокколи",kcal:519,protein:53,recipe:"chickenRice",portion:["1 порция по рецепту"]}]},
+    {short:"СБ",day:"Суббота",meals:[
+      {name:"Завтрак",dish:"Лаваш с индюшиной ветчиной, сыром и яйцами",kcal:625,protein:49,recipe:"lavashBreakfast",portion:["1 порция по рецепту"]},
+      {name:"Обед",dish:"Куриный кебаб с печёным картофелем и салатом",kcal:625,protein:47,recipe:"kebab",portion:["кебаб 200 г","картофель 220 г","салат 150 г"]},
+      {name:"Второй обед",dish:"Йогурт, банан и орехи",kcal:375,protein:28,recipe:"yogurtSnack",portion:["1 порция по рецепту"]},
+      {name:"Ужин",dish:"Котлеты из индейки с гречкой и салатом",kcal:581,protein:49,recipe:"turkeyCutlets",portion:["котлеты 200 г","гречка 200 г","салат 150 г"]}]},
+    {short:"ВС",day:"Воскресенье",meals:[
+      {name:"Завтрак",dish:"Творожно-сырные вафли с йогуртом и ягодами",kcal:562,protein:57,recipe:"savoryWaffles",portion:["вафли 220 г","йогурт 150 г","ягоды 100 г"]},
+      {name:"Обед",dish:"Салат «Цезарь» с курицей и хлебом",kcal:549,protein:47,recipe:"caesar",portion:["1 порция по рецепту"]},
+      {name:"Второй обед",dish:"Творог с йогуртом, ягодами и бананом",kcal:367,protein:37,recipe:"cottageFruit",portion:["1 порция по рецепту"]},
+      {name:"Ужин",dish:"Куриный «бочонок» с грибами, булгуром и салатом",kcal:717,protein:52,recipe:"barrel",portion:["бочонок — ¼ замеса","булгур 108 г","салат 150 г","хлеб 50 г"]}]}
+  ];
+
+  var GOOGLE_CLIENT_ID="591782636812-nno0rnsct96mrb325ot7hf1di8gj5kf1.apps.googleusercontent.com";
+  var GOOGLE_SPREADSHEET_ID="1BRNnPLaVh2a_9HHAKvLXgrDgGITnq5c5qW7u2fAqNzk";
+  var GOOGLE_SHEET_NAME="Питание";
+  var GOOGLE_SCOPE="https://www.googleapis.com/auth/spreadsheets";
+  var SHEET_HEADERS=["Дата","День меню","Приём пищи","Блюдо","План, ккал","План, белок г","Статус","Комментарий","Записано"];
+
+  var today=new Date();
+  var iso=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0");
+  var selected=(today.getDay()+6)%7;
+  var key="menu:"+iso;
+  var state={days:{}};
+  var googleToken=null,googleTokenExpiresAt=0,saving=false;
+  var mealsEl=document.getElementById("meals");
+  var tabsEl=document.getElementById("dayTabs");
+  var commentEl=document.getElementById("comment");
+  var saveButton=document.getElementById("saveDay");
+  var syncState=document.getElementById("syncState");
+  var toastEl=document.getElementById("toast");
+
+  try{state=JSON.parse(localStorage.getItem(key))||{days:{}}}catch(e){state={days:{}}}
+  if(!state.days)state.days={};
+  function currentState(){
+    if(!state.days[selected])state.days[selected]={done:[false,false,false,false],comment:"",googleSaved:false};
+    return state.days[selected];
+  }
+  function persist(){try{localStorage.setItem(key,JSON.stringify(state))}catch(e){}}
+  function toast(message){toastEl.textContent=message;toastEl.classList.add("on");setTimeout(function(){toastEl.classList.remove("on")},1900)}
+  function esc(value){return String(value).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+
+  function renderTabs(){
+    tabsEl.innerHTML="";
+    WEEK.forEach(function(day,index){
+      var button=document.createElement("button");
+      button.className="daytab";button.type="button";button.role="tab";button.textContent=day.short;
+      button.setAttribute("aria-label",day.day);button.setAttribute("aria-selected",String(index===selected));
+      button.addEventListener("click",function(){selected=index;render()});
+      tabsEl.appendChild(button);
+    });
+  }
+  function recipeMarkup(meal){
+    var recipe=RECIPES[meal.recipe];
+    var sourceClass=recipe.source.indexOf("Оценка")===0?" estimate":"";
+    return '<div class="recipe '+(recipe.img?"withphoto":"")+'">'+
+      (recipe.img?'<img src="'+recipe.img+'" alt="'+esc(meal.dish)+'" loading="lazy">':"")+
+      '<div><h3>Порция</h3><ul>'+meal.portion.map(function(x){return"<li>"+esc(x)+"</li>"}).join("")+'</ul>'+
+      '<h3 style="margin-top:13px">Ингредиенты</h3><ul>'+recipe.ingredients.map(function(x){return"<li>"+esc(x)+"</li>"}).join("")+'</ul>'+
+      '<p class="method">'+esc(recipe.method)+'</p><span class="source'+sourceClass+'">'+esc(recipe.source)+'</span></div></div>';
+  }
+  function renderMeals(){
+    var day=WEEK[selected],st=currentState();
+    mealsEl.innerHTML=day.meals.map(function(meal,index){
+      return '<article class="meal '+(st.done[index]?"eaten":"")+'"><div class="mealmain">'+
+        '<button class="check" type="button" data-check="'+index+'" aria-pressed="'+st.done[index]+'" aria-label="'+(st.done[index]?"Отменить отметку":"Отметить как съеденное")+'">✓</button>'+
+        '<div><div class="mealname">'+esc(meal.name)+'</div><div class="dish">'+esc(meal.dish)+'</div></div>'+
+        '<div class="macros">'+meal.kcal+' ккал · Б '+meal.protein+'</div></div>'+
+        '<details><summary>Рецепт и порция</summary>'+recipeMarkup(meal)+'</details></article>';
+    }).join("");
+    mealsEl.querySelectorAll("[data-check]").forEach(function(button){
+      button.addEventListener("click",function(){
+        var index=Number(button.getAttribute("data-check"));
+        st.done[index]=!st.done[index];persist();renderMeals();updateSaveButton();
+      });
+    });
+    commentEl.value=st.comment||"";
+  }
+  function updateSaveButton(){
+    var st=currentState();
+    saveButton.disabled=saving||st.googleSaved;
+    saveButton.textContent=saving?"Синхронизирую…":st.googleSaved?"День в журнале ✓":"Синхронизировать день";
+  }
+  function render(){
+    renderTabs();renderMeals();updateSaveButton();
+    document.getElementById("dateHint").textContent="Сегодня "+iso+" · выбрано меню: "+WEEK[selected].day.toLowerCase();
+    syncState.textContent=currentState().googleSaved?"Данные за сегодня уже записаны в лист «Питание».":"Отметьте съеденное и сохраните день одним нажатием.";
+    syncState.classList.remove("bad");
+  }
+  commentEl.addEventListener("input",function(){currentState().comment=commentEl.value;persist()});
+
+  function requestGoogleToken(){
+    return new Promise(function(resolve){
+      if(googleToken&&Date.now()<googleTokenExpiresAt-60000){resolve(googleToken);return}
+      googleToken=null;googleTokenExpiresAt=0;
+      if(!window.google||!google.accounts||!google.accounts.oauth2){resolve(null);return}
+      var finished=false;
+      var timer=setTimeout(function(){finish(null)},12000);
+      function finish(token){if(finished)return;finished=true;clearTimeout(timer);resolve(token)}
+      var client=google.accounts.oauth2.initTokenClient({
+        client_id:GOOGLE_CLIENT_ID,scope:GOOGLE_SCOPE,
+        callback:function(response){
+          if(response.error||!response.access_token){finish(null);return}
+          googleToken=response.access_token;
+          googleTokenExpiresAt=Date.now()+(Number(response.expires_in)||3600)*1000;
+          finish(googleToken);
+        },
+        error_callback:function(){finish(null)}
+      });
+      try{client.requestAccessToken({prompt:"select_account"})}catch(e){finish(null)}
+    });
+  }
+  async function googleRequest(token,url,options){
+    options=options||{};options.headers=Object.assign({},options.headers||{},{"Authorization":"Bearer "+token});
+    var controller=window.AbortController?new AbortController():null;
+    var timer=setTimeout(function(){if(controller)controller.abort()},12000);
+    if(controller)options.signal=controller.signal;
+    try{
+      var response=await fetch(url,options);
+      if(!response.ok){if(response.status===401||response.status===403){googleToken=null;googleTokenExpiresAt=0}throw new Error("Google Sheets: "+response.status)}
+      return response.status===204?{}:response.json();
+    }finally{clearTimeout(timer)}
+  }
+  function valuesUrl(range){
+    return"https://sheets.googleapis.com/v4/spreadsheets/"+GOOGLE_SPREADSHEET_ID+"/values/"+encodeURIComponent(range);
+  }
+  async function ensureFoodSheet(token){
+    var base="https://sheets.googleapis.com/v4/spreadsheets/"+GOOGLE_SPREADSHEET_ID;
+    var meta=await googleRequest(token,base+"?fields=sheets.properties.title");
+    var exists=(meta.sheets||[]).some(function(sheet){return sheet.properties&&sheet.properties.title===GOOGLE_SHEET_NAME});
+    if(!exists){
+      await googleRequest(token,base+":batchUpdate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({requests:[{addSheet:{properties:{title:GOOGLE_SHEET_NAME,rowCount:1000,columnCount:SHEET_HEADERS.length}}}]})});
+    }
+    var current=await googleRequest(token,valuesUrl(GOOGLE_SHEET_NAME+"!A1:I1"));
+    var header=(current.values||[])[0]||[];
+    if(header.length&&JSON.stringify(header)!==JSON.stringify(SHEET_HEADERS))throw new Error("wrong-header");
+    if(!header.length){
+      await googleRequest(token,valuesUrl(GOOGLE_SHEET_NAME+"!A1:I1")+"?valueInputOption=RAW",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({majorDimension:"ROWS",values:[SHEET_HEADERS]})});
+    }
+  }
+  async function dayAlreadySaved(token){
+    var body=await googleRequest(token,valuesUrl(GOOGLE_SHEET_NAME+"!A2:A"));
+    return(body.values||[]).some(function(row){return String(row[0]||"")===iso});
+  }
+  function buildRows(){
+    var st=currentState(),day=WEEK[selected],stamp=new Date().toISOString();
+    return day.meals.map(function(meal,index){
+      return[iso,day.day,meal.name,meal.dish,meal.kcal,meal.protein,st.done[index]?"Съедено":"Не съедено",st.comment||"",stamp];
+    });
+  }
+  async function appendRows(token,rows){
+    await googleRequest(token,valuesUrl(GOOGLE_SHEET_NAME+"!A:I")+":append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({majorDimension:"ROWS",values:rows})});
+  }
+  async function saveDay(){
+    var st=currentState();
+    if(saving||st.googleSaved)return;
+    if(!st.done.some(Boolean)&&!String(st.comment||"").trim()){toast("Отметьте еду или оставьте комментарий");return}
+    saving=true;updateSaveButton();syncState.textContent="Подключаю Google-журнал…";syncState.classList.remove("bad");
+    try{
+      var token=await requestGoogleToken();
+      if(!token)throw new Error("no-token");
+      await ensureFoodSheet(token);
+      if(await dayAlreadySaved(token)){
+        st.googleSaved=true;persist();toast("Сегодняшний день уже есть в журнале");
+      }else{
+        await appendRows(token,buildRows());
+        st.googleSaved=true;persist();toast("День записан в Google Таблицу");
+      }
+      syncState.textContent="Данные за сегодня записаны в лист «Питание».";
+    }catch(error){
+      syncState.classList.add("bad");
+      syncState.textContent=error&&error.message==="wrong-header"?"Лист «Питание» уже есть, но его структура отличается. Ничего не записано.":"Google не ответил. Отметки остались на этом устройстве.";
+      toast("Не удалось синхронизировать — попробуйте ещё раз");
+    }finally{saving=false;updateSaveButton()}
+  }
+  saveButton.addEventListener("click",saveDay);
+  render();
+})();
 </script>
 </body>
 </html>
