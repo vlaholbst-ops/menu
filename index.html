@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="description" content="Личное меню Владимира на неделю">
+  <meta name="description" content="Личное меню Владимира на две недели">
   <title>Меню Владимира</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
@@ -21,6 +21,7 @@
     button:focus-visible,summary:focus-visible,textarea:focus-visible{outline:3px solid rgba(246,189,79,.78);outline-offset:3px}
     .shell{max-width:820px;margin:0 auto;padding:14px 16px 120px}
     .dayswrap{position:sticky;top:0;z-index:10;background:rgba(247,243,234,.94);backdrop-filter:blur(14px);padding:10px 0 12px}
+    .weekrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}.weektab{border:1px solid var(--line);background:var(--paper);color:var(--muted);border-radius:13px;padding:9px;cursor:pointer;font-weight:850}.weektab[aria-selected="true"]{background:var(--navy);border-color:var(--navy);color:white}
     .days{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
     .daytab{border:1px solid var(--line);background:var(--paper);color:var(--muted);border-radius:13px;padding:11px 5px;cursor:pointer;font-weight:850}
     .daytab[aria-selected="true"]{background:var(--gold);border-color:var(--gold);color:var(--navy)}
@@ -52,6 +53,7 @@
     .savebox label{display:block;font-size:.82rem;font-weight:850;margin-bottom:7px}
     textarea{display:block;width:100%;min-height:92px;resize:vertical;border:1px solid rgba(255,255,255,.18);border-radius:13px;padding:12px;background:rgba(255,255,255,.08);color:white}
     textarea::placeholder{color:#aeb8ca}
+    .shopping{margin-top:12px;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:var(--shadow)}.shopping h2{margin:0 0 3px;font-size:1.18rem}.shoppinglead{margin:0 0 14px;color:var(--muted);font-size:.82rem}.shopgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.shopgroup{border:1px solid var(--line);border-radius:13px;padding:12px}.shopgroup h3{margin:0 0 7px;font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;color:var(--berry)}.shopgroup ul{margin:0;padding-left:18px;color:#555f73;font-size:.84rem}.shopgroup li{margin:5px 0}.shopgroup.carry{background:#f3f8f5}.shopgroup.left{background:#fff8e8}.packnote{margin-top:12px;border-top:1px solid var(--line)}.packnote summary{padding:11px 0 0}.packnote p{margin:8px 0 0;color:var(--muted);font-size:.8rem}
     .actions{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:12px}
     #saveDay{border:0;border-radius:13px;background:var(--gold);color:var(--navy);padding:13px 16px;font-weight:900;cursor:pointer}
     #saveDay:disabled{opacity:.62;cursor:wait}
@@ -62,13 +64,14 @@
     .toast.on{opacity:1;transform:translate(-50%,0)}
     @media(max-width:620px){
       .shell{padding:8px 10px 110px}.days{overflow-x:auto;grid-template-columns:repeat(7,54px);padding-bottom:2px}
-      .mealmain{grid-template-columns:42px 1fr;gap:10px;padding:14px}.macros{grid-column:2;padding:0}.recipe.withphoto{grid-template-columns:1fr}.recipe img{width:100%;height:auto;aspect-ratio:16/10}.actions{grid-template-columns:1fr}.journal{min-height:44px}.toast{max-width:calc(100vw - 24px);white-space:normal;text-align:center}
+      .mealmain{grid-template-columns:42px 1fr;gap:10px;padding:14px}.macros{grid-column:2;padding:0}.recipe.withphoto{grid-template-columns:1fr}.recipe img{width:100%;height:auto;aspect-ratio:16/10}.shopgrid{grid-template-columns:1fr}.actions{grid-template-columns:1fr}.journal{min-height:44px}.toast{max-width:calc(100vw - 24px);white-space:normal;text-align:center}
     }
   </style>
 </head>
 <body>
 <div class="shell">
   <nav class="dayswrap" aria-label="Дни меню">
+    <div class="weekrow" id="weekTabs" role="tablist" aria-label="Неделя меню"></div>
     <div class="days" id="dayTabs" role="tablist"></div>
     <p class="datehint" id="dateHint"></p>
   </nav>
@@ -77,6 +80,9 @@
     <section class="savebox">
       <label for="comment">Комментарий к дню</label>
       <textarea id="comment" placeholder="Например: ужин не ел, вместо него была шаурма."></textarea>
+    </section>
+    <section class="shopping" id="shopping"></section>
+    <section class="savebox">
       <div class="actions">
         <button id="saveDay" type="button">Синхронизировать день</button>
         <a class="journal" href="https://docs.google.com/spreadsheets/d/1BRNnPLaVh2a_9HHAKvLXgrDgGITnq5c5qW7u2fAqNzk/edit" target="_blank" rel="noopener">Журнал</a>
@@ -115,25 +121,25 @@
     cottageFruit:{source:"База",ingredients:["Творог 150 г","греческий йогурт 100 г","ягоды 100 г","банан"],method:"Смешать творог с йогуртом и ягодами, банан добавить сверху или съесть отдельно."}
   };
 
-  var WEEK=[
+  var MENU=[
     {short:"ПН",day:"Понедельник",meals:[
       {name:"Завтрак",dish:"Творожно-сырные вафли с йогуртом и ягодами",kcal:562,protein:57,recipe:"savoryWaffles",portion:["вафли 220 г","йогурт 150 г","ягоды 100 г"]},
       {name:"Обед",dish:"Курица с фунчозой и овощами",kcal:540,protein:50,recipe:"funchose",portion:["1 порция по рецепту"]},
       {name:"Второй обед",dish:"Большая творожная миска, банан и хлеб",kcal:538,protein:41,recipe:"cottageBowl",portion:["творожная миска","банан","хлеб 50 г"]},
-      {name:"Ужин",dish:"Куриные котлеты с брокколи, рисом и салатом",kcal:580,protein:47,recipe:"chickenPatties",portion:["котлеты — ⅓ замеса","рис 170 г","салат 150 г"]}]},
+      {name:"Ужин",dish:"Куриная грудка с рисом и брокколи",kcal:519,protein:53,recipe:"chickenRice",portion:["куриная грудка 150 г","рис 170 г","брокколи 150 г"]}]},
     {short:"ВТ",day:"Вторник",meals:[
       {name:"Завтрак",dish:"Омлет с индюшиной ветчиной и сыром",kcal:584,protein:42,recipe:"omelet",portion:["омлет по рецепту","хлеб 100 г"]},
-      {name:"Обед",dish:"Куриный «бочонок» с грибами, гречкой и салатом",kcal:630,protein:49,recipe:"barrel",portion:["бочонок — ¼ замеса","гречка 200 г","салат 150 г"]},
+      {name:"Обед",dish:"Шаурма с курицей и лёгким сыром",kcal:645,protein:67,recipe:"shawarma",portion:["1 шаурма по рецепту"]},
       {name:"Второй обед",dish:"Творожная миска и банан",kcal:398,protein:36,recipe:"cottageBowl",portion:["творожная миска","банан"]},
-      {name:"Ужин",dish:"Куриный кебаб с печёным картофелем и салатом",kcal:625,protein:47,recipe:"kebab",portion:["кебаб 200 г","картофель 220 г","салат 150 г"]}]},
+      {name:"Ужин",dish:"Куриные тефтели с белковой пастой и салатом",kcal:555,protein:48,recipe:"meatballs",portion:["тефтели — ¼ замеса","паста 167 г","салат 150 г"]}]},
     {short:"СР",day:"Среда",meals:[
       {name:"Завтрак",dish:"Маковые панкейки с греческим йогуртом",kcal:610,protein:44,recipe:"poppyPancakes",portion:["панкейки — ½ замеса","йогурт 200 г"]},
-      {name:"Обед",dish:"Шаурма с курицей и лёгким сыром",kcal:645,protein:67,recipe:"shawarma",portion:["1 шаурма по рецепту"]},
+      {name:"Обед",dish:"Котлеты из индейки с булгуром, салатом и хлебом",kcal:667,protein:52,recipe:"turkeyCutlets",portion:["котлеты 200 г","булгур 108 г","салат 150 г","хлеб 50 г"]},
       {name:"Второй обед",dish:"Йогурт, банан и орехи",kcal:375,protein:28,recipe:"yogurtSnack",portion:["1 порция по рецепту"]},
-      {name:"Ужин",dish:"Куриные тефтели с белковой пастой и салатом",kcal:555,protein:48,recipe:"meatballs",portion:["тефтели — ¼ замеса","паста 167 г","салат 150 г"]}]},
+      {name:"Ужин",dish:"Куриные котлеты с брокколи, рисом и салатом",kcal:580,protein:47,recipe:"chickenPatties",portion:["котлеты — ⅓ замеса","рис 170 г","салат 150 г"]}]},
     {short:"ЧТ",day:"Четверг",meals:[
       {name:"Завтрак",dish:"Сырники с йогуртом и ягодами",kcal:450,protein:46,recipe:"syrniki",portion:["4 сырника","йогурт 100 г","ягоды 100 г"]},
-      {name:"Обед",dish:"Котлеты из индейки с булгуром и салатом",kcal:527,protein:47,recipe:"turkeyCutlets",portion:["котлеты 200 г","булгур 108 г","салат 150 г"]},
+      {name:"Обед",dish:"Куриные котлеты с брокколи, рисом и салатом",kcal:580,protein:47,recipe:"chickenPatties",portion:["котлеты — ⅓ замеса","рис 170 г","салат 150 г"]},
       {name:"Второй обед",dish:"Половина порции бутербродов с индейкой и фрукт",kcal:420,protein:31,recipe:"sandwiches",portion:["бутерброды — ½ порции","яблоко или груша"]},
       {name:"Ужин",dish:"Куриные кармашки с белковой пастой и салатом",kcal:764,protein:57,recipe:"chickenPockets",portion:["1 порция по рецепту"]}]},
     {short:"ПТ",day:"Пятница",meals:[
@@ -143,14 +149,66 @@
       {name:"Ужин",dish:"Куриная грудка с рисом и брокколи",kcal:519,protein:53,recipe:"chickenRice",portion:["1 порция по рецепту"]}]},
     {short:"СБ",day:"Суббота",meals:[
       {name:"Завтрак",dish:"Лаваш с индюшиной ветчиной, сыром и яйцами",kcal:625,protein:49,recipe:"lavashBreakfast",portion:["1 порция по рецепту"]},
-      {name:"Обед",dish:"Куриный кебаб с печёным картофелем и салатом",kcal:625,protein:47,recipe:"kebab",portion:["кебаб 200 г","картофель 220 г","салат 150 г"]},
+      {name:"Обед",dish:"Шаурма с курицей и лёгким сыром",kcal:645,protein:67,recipe:"shawarma",portion:["1 шаурма по рецепту"]},
       {name:"Второй обед",dish:"Йогурт, банан и орехи",kcal:375,protein:28,recipe:"yogurtSnack",portion:["1 порция по рецепту"]},
       {name:"Ужин",dish:"Котлеты из индейки с гречкой и салатом",kcal:581,protein:49,recipe:"turkeyCutlets",portion:["котлеты 200 г","гречка 200 г","салат 150 г"]}]},
     {short:"ВС",day:"Воскресенье",meals:[
-      {name:"Завтрак",dish:"Творожно-сырные вафли с йогуртом и ягодами",kcal:562,protein:57,recipe:"savoryWaffles",portion:["вафли 220 г","йогурт 150 г","ягоды 100 г"]},
-      {name:"Обед",dish:"Салат «Цезарь» с курицей и хлебом",kcal:549,protein:47,recipe:"caesar",portion:["1 порция по рецепту"]},
+      {name:"Завтрак",dish:"Омлет с индюшиной ветчиной и сыром",kcal:584,protein:42,recipe:"omelet",portion:["омлет по рецепту","хлеб 100 г"]},
+      {name:"Обед",dish:"Салат «Цезарь» с курицей и хлебом",kcal:500,protein:37,recipe:"caesar",portion:["курица 100 г из остатка","овощи и соус «Цезарь»","хлеб 100 г"]},
       {name:"Второй обед",dish:"Творог с йогуртом, ягодами и бананом",kcal:367,protein:37,recipe:"cottageFruit",portion:["1 порция по рецепту"]},
-      {name:"Ужин",dish:"Куриный «бочонок» с грибами, булгуром и салатом",kcal:717,protein:52,recipe:"barrel",portion:["бочонок — ¼ замеса","булгур 108 г","салат 150 г","хлеб 50 г"]}]}
+      {name:"Ужин",dish:"Куриный «бочонок» с грибами, булгуром и салатом",kcal:717,protein:52,recipe:"barrel",portion:["бочонок — ¼ замеса","булгур 108 г","салат 150 г","хлеб 50 г"]}]},
+    {short:"ПН",day:"Понедельник",meals:[
+      {name:"Завтрак",dish:"Сырники с йогуртом, ягодами и бананом",kcal:550,protein:47,recipe:"syrniki",portion:["4 сырника из заморозки","йогурт 100 г","ягоды 100 г","банан"]},
+      {name:"Обед",dish:"Куриный «бочонок» с грибами, гречкой и салатом",kcal:630,protein:49,recipe:"barrel",portion:["бочонок — 1 замороженная порция","гречка 200 г","салат 150 г"]},
+      {name:"Второй обед",dish:"Половина порции бутербродов с индейкой и фрукт",kcal:420,protein:31,recipe:"sandwiches",portion:["бутерброды — ½ порции","яблоко или груша"]},
+      {name:"Ужин",dish:"Рубленые куриные котлеты с булгуром и салатом",kcal:587,protein:59,recipe:"choppedCutlets",portion:["котлеты 200 г из заморозки","булгур 108 г","салат 150 г"]}]},
+    {short:"ВТ",day:"Вторник",meals:[
+      {name:"Завтрак",dish:"Маковые панкейки с греческим йогуртом",kcal:610,protein:44,recipe:"poppyPancakes",portion:["панкейки — замороженная ½ замеса","йогурт 200 г"]},
+      {name:"Обед",dish:"Куриный «бочонок» с грибами, гречкой и салатом",kcal:630,protein:49,recipe:"barrel",portion:["бочонок — 1 замороженная порция","гречка 200 г","салат 150 г"]},
+      {name:"Второй обед",dish:"Йогурт, банан и орехи",kcal:375,protein:28,recipe:"yogurtSnack",portion:["1 порция по рецепту"]},
+      {name:"Ужин",dish:"Куриные тефтели с белковой пастой и салатом",kcal:555,protein:48,recipe:"meatballs",portion:["тефтели — 1 замороженная порция","паста 167 г","салат 150 г"]}]},
+    {short:"СР",day:"Среда",meals:[
+      {name:"Завтрак",dish:"Лаваш с индюшиной ветчиной, сыром и яйцами",kcal:625,protein:49,recipe:"lavashBreakfast",portion:["1 порция по рецепту"]},
+      {name:"Обед",dish:"Курица с фунчозой и овощами",kcal:540,protein:50,recipe:"funchose",portion:["1 порция по рецепту"]},
+      {name:"Второй обед",dish:"Большая творожная миска, банан и хлеб",kcal:538,protein:41,recipe:"cottageBowl",portion:["творожная миска","банан","хлеб 50 г"]},
+      {name:"Ужин",dish:"Куриная грудка с рисом и брокколи",kcal:519,protein:53,recipe:"chickenRice",portion:["куриная грудка 150 г","рис 170 г","брокколи 150 г"]}]},
+    {short:"ЧТ",day:"Четверг",meals:[
+      {name:"Завтрак",dish:"Творожно-сырные вафли с йогуртом и ягодами",kcal:562,protein:57,recipe:"savoryWaffles",portion:["замороженная порция вафель 220 г","йогурт 150 г","ягоды 100 г"]},
+      {name:"Обед",dish:"Шаурма с курицей и лёгким сыром",kcal:645,protein:67,recipe:"shawarma",portion:["1 шаурма по рецепту"]},
+      {name:"Второй обед",dish:"Йогурт, банан и орехи",kcal:375,protein:28,recipe:"yogurtSnack",portion:["1 порция по рецепту"]},
+      {name:"Ужин",dish:"Рубленые куриные котлеты с белковой пастой и салатом",kcal:555,protein:55,recipe:"choppedCutlets",portion:["котлеты из оставшихся 400 г филе","паста 167 г","салат 150 г"]}]},
+    {short:"ПТ",day:"Пятница",meals:[
+      {name:"Завтрак",dish:"Шоколадные вафли с творогом",kcal:629,protein:56,recipe:"chocolateWaffles",portion:["замороженная ½ замеса","творог 200 г"]},
+      {name:"Обед",dish:"Куриный «бочонок» с грибами, гречкой и салатом",kcal:630,protein:49,recipe:"barrel",portion:["бочонок — последняя замороженная порция","гречка 200 г","салат 150 г"]},
+      {name:"Второй обед",dish:"Творожная миска и банан",kcal:398,protein:36,recipe:"cottageBowl",portion:["творожная миска","банан"]},
+      {name:"Ужин",dish:"Куриные котлеты с брокколи, рисом и салатом",kcal:580,protein:47,recipe:"chickenPatties",portion:["котлеты — последняя замороженная порция","рис 170 г","салат 150 г"]}]},
+    {short:"СБ",day:"Суббота",meals:[
+      {name:"Завтрак",dish:"Сырники с йогуртом и ягодами",kcal:450,protein:46,recipe:"syrniki",portion:["4 сырника","йогурт 100 г","ягоды 100 г"]},
+      {name:"Обед",dish:"Куриный кебаб с печёным картофелем и салатом",kcal:625,protein:47,recipe:"kebab",portion:["кебаб 250 г — ½ замеса","картофель 220 г","салат 150 г"]},
+      {name:"Второй обед",dish:"Йогурт, банан и орехи",kcal:375,protein:28,recipe:"yogurtSnack",portion:["1 порция по рецепту"]},
+      {name:"Ужин",dish:"Куриные кармашки с белковой пастой и салатом",kcal:764,protein:57,recipe:"chickenPockets",portion:["1 порция по рецепту"]}]},
+    {short:"ВС",day:"Воскресенье",meals:[
+      {name:"Завтрак",dish:"Омлет с индюшиной ветчиной и сыром",kcal:584,protein:42,recipe:"omelet",portion:["омлет по рецепту","хлеб 100 г"]},
+      {name:"Обед",dish:"Куриный кебаб с печёным картофелем и салатом",kcal:625,protein:47,recipe:"kebab",portion:["кебаб 250 г — остаток замеса","картофель 220 г","салат 150 г"]},
+      {name:"Второй обед",dish:"Половина порции бутербродов с индейкой и фрукт",kcal:420,protein:31,recipe:"sandwiches",portion:["бутерброды — ½ порции","яблоко или груша"]},
+      {name:"Ужин",dish:"Куриные тефтели с белковой пастой и салатом",kcal:555,protein:48,recipe:"meatballs",portion:["тефтели — 1 замороженная порция","паста 167 г","салат 150 г"]}]}
+  ];
+
+  var SHOPPING=[
+    {buy:["Куриное филе — 1 упаковка 900 г","Творог 2% — 2×200 г; греческий йогурт — 500 г","Яйца — 10 шт.; лёгкий сыр — 200 г; молоко — 1 л","Фунчоза — 200 г; рис; хлеб; брокколи; ягоды и овощи"],use:["Филе 200 г — фунчоза; 150 г — ужин","Творог, яйца, молоко и сыр — замес вафель","Йогурт и ягоды — завтрак и творожная миска"],left:["Сырое филе 550 г → вторник: 150 г в шаурму, 400 г в тефтели","Половину готовых вафель заморозить → неделя 2, четверг","Сухие крупы, хлеб и приправы остаются в запасе"]},
+    {buy:["Индюшиная ветчина — 100 г; лаваш — 1 шт.","Творог 2% — 200 г; банан","Огурец, помидор и салат — по 1 упаковке","Белковая паста — 167 г; томатная паста"],use:["Оставшиеся 550 г филе: 150 г — шаурма, 400 г — полный замес тефтелей","Оставшиеся яйца и сыр — омлет и шаурма"],left:["Сырого филе не остаётся","Из замеса тефтелей: 1 порция сегодня, 3 порции заморозить → неделя 2, вторник и воскресенье; ещё 1 порция на следующий цикл"]},
+    {buy:["Куриный фарш — 600 г","Мягкий творог — 140 г; греческий йогурт — 450 г","Котлеты из индейки — 200 г","Булгур 108 г; рис 170 г; салат 300 г; хлеб 50 г","Мак, рисовая мука, банан и орехи 25 г"],use:["Весь фарш 600 г — полный замес котлет с брокколи и морковью","Половина панкейков — завтрак; котлеты — ужин"],left:["2 готовые порции котлет: одну в холодильник → четверг, одну заморозить → неделя 2, пятница","Вторую половину панкейков заморозить → неделя 2, вторник"]},
+    {buy:["Творог 5% — 400 г; йогурт 100 г; ягоды 100 г","Индейка и лёгкий сыр для бутербродов; фрукт","Куриные кармашки — 150 г; белковая паста — 167 г","Рис 170 г; салат 300 г; хлеб 50 г"],use:["Готовая порция котлет из среды — обед","Из 400 г творога приготовить все 8 сырников"],left:["4 готовых сырника заморозить → неделя 2, понедельник","Замороженная порция котлет остаётся до недели 2, пятницы"]},
+    {buy:["Куриное филе — 1 упаковка 900 г","Греческий йогурт 150 г; творог 2% — 400 г","Рисовая мука, какао, 2 яйца","Булгур 108 г; рис 170 г; салат 150 г; брокколи 150 г","Лук, морковь и взвешенное масло гхи"],use:["Филе 500 г — полный замес рубленых котлет; 150 г — ужин","Половина шоколадных вафель — завтрак"],left:["Сырое филе 250 г → суббота 150 г в шаурму, воскресенье 100 г в «Цезарь»","Готовые рубленые котлеты 300 г: 200 г заморозить → неделя 2, понедельник; 100 г → следующий цикл","Вторую половину шоколадных вафель заморозить → неделя 2, пятница"]},
+    {buy:["Круглый лаваш — 1 шт.; лаваш для шаурмы — 1 шт.","Индюшиная ветчина 60 г; лёгкий сыр 120 г; 2 яйца","Йогурт 250 г; банан; орехи 25 г","Котлеты из индейки 200 г; гречка 200 г; салат 150 г","Овощи и соус для шаурмы"],use:["150 г филе из пятничного остатка — шаурма","Остальные продукты — по дневным порциям"],left:["Сырое филе 100 г → воскресный «Цезарь»","Других скоропортящихся белковых остатков нет"]},
+    {buy:["Куриный фарш — 800 г","Грибы в греческом йогурте — 200 г; лёгкий сыр — 100 г; сухари — 50 г","Ветчина 30 г; 2 яйца; хлеб 200 г","Овощи и соус для «Цезаря»; творог 150 г; йогурт 100 г; ягоды и банан","Булгур 108 г; салат 150 г"],use:["Оставшиеся 100 г филе — «Цезарь»","Весь фарш 800 г — 4 «бочонка»"],left:["1 «бочонок» съесть сегодня; 3 порции заморозить → неделя 2: понедельник, вторник и пятница","Сырого мяса не остаётся"]},
+    {buy:["Йогурт 100 г; ягоды 100 г; банан","Гречка 200 г; булгур 108 г; салат 300 г","Индейка, сыр, хлеб и фрукт для бутербродов"],use:["Из морозилки: 4 сырника, 1 «бочонок», 200 г рубленых котлет"],left:["Свежего сырого мяса покупать не нужно","В морозилке остаются: 2 «бочонка», 1 порция куриных котлет, 3 порции тефтелей"]},
+    {buy:["Греческий йогурт — 450 г; банан; орехи 25 г","Гречка 200 г; белковая паста 167 г; салат 300 г"],use:["Из морозилки: половина маковых панкейков, 1 «бочонок», 1 порция тефтелей"],left:["Свежего сырого мяса покупать не нужно","В морозилке остаются: 1 «бочонок», 1 порция куриных котлет, 2 порции тефтелей"]},
+    {buy:["Куриное филе — 1 упаковка 900 г","Круглый лаваш; индюшиная ветчина 60 г; лёгкий сыр 60 г; 2 яйца","Фунчоза 50 г; овощи; рис 170 г; брокколи 150 г","Творог 2% — 200 г; йогурт; банан; хлеб 50 г"],use:["Филе 200 г — фунчоза; 150 г — ужин","Остальные продукты — по дневным порциям"],left:["Сырое филе 550 г → четверг: 150 г в шаурму, 400 г в рубленые котлеты"]},
+    {buy:["Лаваш; лёгкий сыр 60 г; овощи и соус для шаурмы","Йогурт 400 г; ягоды 100 г; банан; орехи 25 г","Белковая паста 167 г; салат 150 г","Лук, морковь и взвешенное масло гхи"],use:["Из морозилки: вафли разморозить на завтрак","Оставшиеся 550 г филе: 150 г — шаурма, 400 г — рубленые котлеты"],left:["Сырого филе не остаётся","Если из 400 г котлет получится больше одной порции — остаток заморозить на следующий цикл"]},
+    {buy:["Творог 2% — 400 г; банан","Гречка 200 г; рис 170 г; салат 300 г"],use:["Из морозилки: шоколадные вафли, последний «бочонок», последняя порция котлет с брокколи"],left:["Свежего сырого мяса покупать не нужно","После дня партий «бочонков» и котлет с брокколи не остаётся"]},
+    {buy:["Филе куриного бедра — 500 г","Творог 5% — 400 г; йогурт 350 г; ягоды 100 г; банан; орехи 25 г","Картофель 220 г; салат 300 г","Куриные кармашки 150 г; белковая паста 167 г"],use:["Весь пакет бедра 500 г — полный замес кебаба; 250 г съесть сегодня","Из творога приготовить все 8 сырников; 4 съесть сегодня"],left:["Готовый кебаб 250 г → воскресный обед","4 сырника заморозить → следующий 14-дневный цикл"]},
+    {buy:["Индюшиная ветчина 30 г; лёгкий сыр 30 г; 2 яйца; хлеб 100 г","Картофель 220 г; салат 300 г","Индейка, сыр и фрукт для бутербродов","Белковая паста 167 г"],use:["Из холодильника: оставшиеся 250 г кебаба","Из морозилки: 1 порция тефтелей"],left:["Сырого мяса и кебаба не остаётся","В морозилке остаются 4 сырника и 1 порция тефтелей → начало следующего цикла"]}
   ];
 
   var GOOGLE_CLIENT_ID="591782636812-nno0rnsct96mrb325ot7hf1di8gj5kf1.apps.googleusercontent.com";
@@ -161,12 +219,17 @@
 
   var today=new Date();
   var iso=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0");
-  var selected=(today.getDay()+6)%7;
+  var cycleStart=new Date(2026,8,14);
+  var todayAtMidnight=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+  var daysFromCycleStart=Math.floor((todayAtMidnight-cycleStart)/86400000);
+  var selected=((daysFromCycleStart%14)+14)%14;
   var key="menu:"+iso;
   var state={days:{}};
   var googleToken=null,googleTokenExpiresAt=0,saving=false;
   var mealsEl=document.getElementById("meals");
   var tabsEl=document.getElementById("dayTabs");
+  var weekTabsEl=document.getElementById("weekTabs");
+  var shoppingEl=document.getElementById("shopping");
   var commentEl=document.getElementById("comment");
   var saveButton=document.getElementById("saveDay");
   var syncState=document.getElementById("syncState");
@@ -183,12 +246,24 @@
   function esc(value){return String(value).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 
   function renderTabs(){
+    var selectedWeek=Math.floor(selected/7);
+    weekTabsEl.innerHTML="";
+    [0,1].forEach(function(week){
+      var weekButton=document.createElement("button");
+      weekButton.className="weektab";weekButton.type="button";weekButton.role="tab";
+      weekButton.textContent="Неделя "+(week+1);
+      weekButton.setAttribute("aria-selected",String(week===selectedWeek));
+      weekButton.addEventListener("click",function(){selected=week*7+(selected%7);render()});
+      weekTabsEl.appendChild(weekButton);
+    });
     tabsEl.innerHTML="";
-    WEEK.forEach(function(day,index){
+    MENU.slice(selectedWeek*7,selectedWeek*7+7).forEach(function(day,index){
+      var menuIndex=selectedWeek*7+index;
       var button=document.createElement("button");
       button.className="daytab";button.type="button";button.role="tab";button.textContent=day.short;
-      button.setAttribute("aria-label",day.day);button.setAttribute("aria-selected",String(index===selected));
-      button.addEventListener("click",function(){selected=index;render()});
+      button.setAttribute("aria-label","Неделя "+(selectedWeek+1)+", "+day.day);
+      button.setAttribute("aria-selected",String(menuIndex===selected));
+      button.addEventListener("click",function(){selected=menuIndex;render()});
       tabsEl.appendChild(button);
     });
   }
@@ -202,7 +277,7 @@
       '<p class="method">'+esc(recipe.method)+'</p><span class="source'+sourceClass+'">'+esc(recipe.source)+'</span></div></div>';
   }
   function renderMeals(){
-    var day=WEEK[selected],st=currentState();
+    var day=MENU[selected],st=currentState();
     mealsEl.innerHTML=day.meals.map(function(meal,index){
       return '<article class="meal '+(st.done[index]?"eaten":"")+'"><div class="mealmain">'+
         '<button class="check" type="button" data-check="'+index+'" aria-pressed="'+st.done[index]+'" aria-label="'+(st.done[index]?"Отменить отметку":"Отметить как съеденное")+'">✓</button>'+
@@ -218,14 +293,28 @@
     });
     commentEl.value=st.comment||"";
   }
+  function listMarkup(items){
+    return"<ul>"+items.map(function(item){return"<li>"+esc(item)+"</li>"}).join("")+"</ul>";
+  }
+  function renderShopping(){
+    var shopping=SHOPPING[selected];
+    shoppingEl.innerHTML='<h2>Что купить и куда уйдут остатки</h2>'+
+      '<p class="shoppinglead">Расчёт на этот день с учётом уже купленных продуктов, заготовок и следующих дней.</p>'+
+      '<div class="shopgrid">'+
+        '<div class="shopgroup"><h3>Купить</h3>'+listMarkup(shopping.buy)+'</div>'+
+        '<div class="shopgroup carry"><h3>Взять и использовать</h3>'+listMarkup(shopping.use)+'</div>'+
+        '<div class="shopgroup left"><h3>Останется</h3>'+listMarkup(shopping.left)+'</div>'+
+      '</div>'+
+      '<details class="packnote"><summary>Какие фасовки заложены</summary><p>Куриное филе — упаковка 900 г; филе бедра — 500 г; куриный фарш — по размеру полного рецепта 600 или 800 г. Крупы, мука, соусы, специи и другие продукты длительного хранения покупаются стандартной упаковкой и переходят в запас. Готовые лишние порции замораживаются в день приготовления.</p></details>';
+  }
   function updateSaveButton(){
     var st=currentState();
     saveButton.disabled=saving||st.googleSaved;
     saveButton.textContent=saving?"Синхронизирую…":st.googleSaved?"День в журнале ✓":"Синхронизировать день";
   }
   function render(){
-    renderTabs();renderMeals();updateSaveButton();
-    document.getElementById("dateHint").textContent="Сегодня "+iso+" · выбрано меню: "+WEEK[selected].day.toLowerCase();
+    renderTabs();renderMeals();renderShopping();updateSaveButton();
+    document.getElementById("dateHint").textContent="Цикл 14 дней · неделя "+(Math.floor(selected/7)+1)+" · "+MENU[selected].day.toLowerCase()+" · запись за "+iso;
     syncState.textContent=currentState().googleSaved?"Данные за сегодня уже записаны в лист «Питание».":"Отметьте съеденное и сохраните день одним нажатием.";
     syncState.classList.remove("bad");
   }
@@ -285,9 +374,9 @@
     return(body.values||[]).some(function(row){return String(row[0]||"")===iso});
   }
   function buildRows(){
-    var st=currentState(),day=WEEK[selected],stamp=new Date().toISOString();
+    var st=currentState(),day=MENU[selected],stamp=new Date().toISOString();
     return day.meals.map(function(meal,index){
-      return[iso,day.day,meal.name,meal.dish,meal.kcal,meal.protein,st.done[index]?"Съедено":"Не съедено",st.comment||"",stamp];
+      return[iso,"Неделя "+(Math.floor(selected/7)+1)+" · "+day.day,meal.name,meal.dish,meal.kcal,meal.protein,st.done[index]?"Съедено":"Не съедено",st.comment||"",stamp];
     });
   }
   async function appendRows(token,rows){
