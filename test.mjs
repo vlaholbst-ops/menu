@@ -50,6 +50,55 @@ assert.ok(html.includes('Куриное филе — упаковка 900 г'))
 assert.match(context.SHOPPING[0].left.join(' '), /550 г.*вторник/)
 assert.match(context.SHOPPING[1].use.join(' '), /550 г.*150 г.*400 г/)
 assert.match(context.SHOPPING[9].left.join(' '), /550 г.*четверг/)
+
+// Owner feedback: portions, recipes and ingredient flows must change together.
+assert.ok(!context.RECIPES.omelet.img, 'omelet has no unrelated photo')
+for (const index of [0, 7]) {
+  assert.doesNotMatch(JSON.stringify(context.MENU[index].meals[0]), /ягод/i, 'Monday breakfast has no berries')
+}
+for (const index of [0, 1, 4, 7, 8, 9, 11]) {
+  const meal = context.MENU[index].meals[2]
+  assert.equal(meal.dish, 'Творог с бананом, яблоком и греческим йогуртом')
+  assert.equal(meal.recipe, 'cottageBowl')
+  assert.match(context.SHOPPING[index].buy.join(' '), /Творог|творог/)
+  assert.match(context.SHOPPING[index].buy.join(' '), /яблоко/i)
+}
+assert.doesNotMatch(JSON.stringify(context.RECIPES.cottageBowl), /ягод|хлеб|миска/i)
+for (const mealIndex of [1, 3]) assert.equal(context.MENU[2].meals[mealIndex].recipe, 'chickenPatties')
+assert.equal(context.MENU[3].meals[1].recipe, 'chickenPatties')
+assert.match(context.SHOPPING[2].use.join(' '), /600 г.*3 равные порции.*обед.*ужин/)
+assert.match(context.SHOPPING[2].left.join(' '), /1 готовая порция.*четверг/)
+assert.match(context.SHOPPING[3].use.join(' '), /Последняя готовая порция котлет/)
+assert.match(context.SHOPPING[11].buy.join(' '), /фарш — 600 г/)
+assert.match(context.SHOPPING[11].left.join(' '), /2 готовые порции новых котлет/)
+assert.doesNotMatch(context.SHOPPING[11].use.join(' '), /последняя порция котлет/)
+for (const index of [1, 3, 8, 10]) assert.notEqual(context.MENU[index].meals[1].recipe, 'shawarma')
+assert.equal(context.MENU[5].meals[1].recipe, 'shawarma', 'Saturday shawarma remains')
+assert.equal(context.RECIPES[context.MENU[4].meals[1].recipe].ingredients[0], 'Куриное филе 500 г', 'first Friday keeps the full batch')
+assert.equal(context.RECIPES[context.MENU[10].meals[3].recipe].ingredients[0], 'Куриное филе 400 г', 'second Thursday recipe uses exactly the available fillet')
+assert.match(context.SHOPPING[10].use.join(' '), /400 г — рубленые котлеты/, 'second Thursday shopping agrees with the recipe batch')
+for (const index of [1, 10]) {
+  assert.equal(context.MENU[index].meals[1].recipe, 'chickenMash')
+  assert.doesNotMatch(JSON.stringify(context.SHOPPING[index]), /шаурм/i)
+}
+for (const index of [1, 8]) {
+  assert.equal(context.MENU[index].meals[3].recipe, 'meatballsMash')
+  assert.match(context.MENU[index].meals[3].portion.join(' '), /картофель.*молоко.*сливочное масло/)
+  assert.doesNotMatch(JSON.stringify(context.SHOPPING[index]), /паста — 167|паста 167/)
+}
+assert.equal(context.MENU[3].meals[0].recipe, 'granola')
+assert.equal(context.MENU[7].meals[0].recipe, 'granola')
+assert.doesNotMatch(JSON.stringify(context.SHOPPING[7]), /сырник/)
+for (const index of [2, 8]) {
+  assert.equal(context.MENU[index].meals[0].recipe, 'poppyPancakes')
+  assert.match(context.MENU[index].meals[0].portion.join(' '), /варенье без сахара 20 г/)
+}
+assert.equal(context.MENU[9].meals[0].recipe, 'lavashBreakfast')
+assert.doesNotMatch(JSON.stringify(context.MENU[9].meals[0]), /варенье|сгущ/i)
+for (const index of [4, 11]) {
+  assert.match(context.MENU[index].meals[0].portion.join(' '), /греческий йогурт 100 г.*сахарозаменитель/)
+}
+assert.match(context.RECIPES.chocolateWaffles.method, /взвесить.*калории по этикетке/)
 assert.ok(html.includes('Синхронизировать день'))
 assert.ok(html.includes('GOOGLE_SHEET_NAME="Питание"'))
 assert.ok(html.includes('addSheet'))
