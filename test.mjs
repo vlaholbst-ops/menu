@@ -5,104 +5,211 @@ import vm from 'node:vm'
 const html = readFileSync(new URL('./index.html', import.meta.url), 'utf8')
 const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1]
 assert.ok(script, 'inline script is present')
-new Function(script)
+new vm.Script(script)
 
-const data = script.match(/var RECIPES=(\{[\s\S]*?\});\n\n  var MENU=(\[[\s\S]*?\]);\n\n  var SHOPPING=(\[[\s\S]*?\]);\n\n  var GOOGLE_CLIENT_ID=/)
-assert.ok(data, 'menu data is readable')
-const context = {}
-vm.createContext(context)
-vm.runInContext(`RECIPES=${data[1]};MENU=${data[2]};SHOPPING=${data[3]}`, context)
+const testScript = script.replace('selectDate(calendarDate(new Date()));', `globalThis.app={
+  MENU, RECIPES, SHOPPING, selectDate, selectPlanDay, saveDay, currentState
+};`)
 
-assert.equal(context.MENU.length, 14)
-assert.equal(context.SHOPPING.length, 14)
-for (const [index, day] of context.MENU.entries()) {
-  assert.equal(day.meals.length, 4, `${day.day}: four meals`)
+const fakeFoodJournalId = 'mock-food-journal-abcdefghijkl'
+const defaultJournalHash = '#journal=' + fakeFoodJournalId
+
+function setup({ storage = new Map(), hash = defaultJournalHash, oauthError, httpFail, existing, failAfterAppend } = {}) {
+  const requests = []
+  const journal = { exists: Boolean(existing), headers: [], rows: [] }
+  const elements = new Map()
+  function element() {
+    return {
+      textContent: '',
+      classList: { add() {}, remove() {} },
+      addEventListener() {},
+      setAttribute() {},
+      appendChild() {},
+      querySelectorAll() { return [] },
+    }
+  }
+  const google = {
+    accounts: {
+      oauth2: {
+        initTokenClient({ callback, error_callback }) {
+          return {
+            requestAccessToken() {
+              if (oauthError) error_callback({ type: oauthError })
+              else callback({ access_token: 'mock-token', expires_in: 3600 })
+            },
+          }
+        },
+      },
+    },
+  }
+
+  function response(body, status = 200) {
+    return { ok: status >= 200 && status < 300, status, json: async () => body }
+  }
+  async function fetch(url, options) {
+    assert.equal(options.headers.Authorization, 'Bearer mock-token')
+    const method = options.method ?? 'GET'
+    const path = decodeURIComponent(url)
+    assert.ok(path.startsWith('https://sheets.googleapis.com/v4/spreadsheets/' + fakeFoodJournalId))
+    const body = options.body ? JSON.parse(options.body) : undefined
+    requests.push({ path, method, body })
+    if (httpFail) return response({}, httpFail)
+    if (path.includes('?fields=')) {
+      return response({ sheets: journal.exists ? [{ properties: { title: 'Питание' } }] : [] })
+    }
+    if (path.endsWith(':batchUpdate')) {
+      const properties = body.requests[0].addSheet.properties
+      assert.equal(properties.title, 'Питание')
+      assert.deepEqual(properties.gridProperties, { rowCount: 1000, columnCount: 9 })
+      assert.equal(properties.rowCount, undefined)
+      assert.equal(properties.columnCount, undefined)
+      journal.exists = true
+      return response({})
+    }
+    assert.ok(journal.exists, 'worksheet already exists')
+    if (path.endsWith('!A1:I1')) return response({ values: [journal.headers] })
+    if (path.endsWith('!A1:I1?valueInputOption=RAW')) {
+      assert.equal(method, 'PUT')
+      assert.equal(body.values[0].length, 9)
+      journal.headers = body.values[0]
+      return response({})
+    }
+    if (path.endsWith('!A2:A?valueRenderOption=UNFORMATTED_VALUE')) {
+      return response({ values: journal.rows.map(([date]) => [date]) })
+    }
+    assert.match(path, /!A:I:append\?valueInputOption=RAW&insertDataOption=INSERT_ROWS$/)
+    assert.equal(method, 'POST')
+    assert.equal(body.values.length, 4)
+    assert.ok(body.values.every(row => row.length === 9))
+    journal.rows.push(...body.values)
+    if (failAfterAppend) throw new TypeError('Connection reset after save')
+    return response({ updates: { updatedRows: body.values.length } })
+  }
+
+  const sandbox = {
+    document: {
+      getElementById(id) {
+        if (!elements.has(id)) elements.set(id, element())
+        return elements.get(id)
+      },
+      createElement: element,
+    },
+    localStorage: {
+      getItem(key) { return storage.get(key) ?? null },
+      setItem(key, value) { storage.set(key, value) },
+    },
+    navigator: { locks: { async request(_name, write) { await write() } } },
+    window: { google, location: { hash } }, google, fetch, AbortController, URLSearchParams,
+    setTimeout() { return 0 },
+    clearTimeout() {},
+  }
+  vm.runInNewContext(testScript, sandbox)
+  return { app: sandbox.app, requests, journal, elements, storage }
+}
+
+const { app: { MENU, RECIPES, SHOPPING } } = setup()
+assert.equal(MENU.length, 14)
+assert.equal(SHOPPING.length, 14)
+for (const [index, day] of MENU.entries()) {
+  assert.equal(day.meals.length, 4)
   const totals = day.meals.reduce((sum, meal) => ({ kcal: sum.kcal + meal.kcal, protein: sum.protein + meal.protein }), { kcal: 0, protein: 0 })
   assert.ok(totals.kcal >= 2100 && totals.kcal <= 2250, `day ${index + 1}: calories are in range`)
   assert.ok(totals.protein >= 160, `day ${index + 1}: protein is at least 160 g`)
   for (const meal of day.meals) {
-    assert.ok(context.RECIPES[meal.recipe], `${meal.dish}: recipe exists`)
-    assert.ok(meal.portion.length, `${meal.dish}: portion exists`)
-    assert.ok(meal.kcal > 0 && meal.protein > 0, `${meal.dish}: macros exist`)
+    assert.ok(RECIPES[meal.recipe], `${meal.dish}: recipe exists`)
+    assert.ok(meal.portion.length && meal.kcal > 0 && meal.protein > 0)
   }
-  for (const group of ['buy', 'use', 'left']) {
-    assert.ok(context.SHOPPING[index][group].length, `day ${index + 1}: ${group} list exists`)
-  }
-}
-for (let weekday = 0; weekday < 7; weekday += 1) {
-  assert.notDeepEqual(
-    context.MENU[weekday].meals.map(meal => meal.dish),
-    context.MENU[weekday + 7].meals.map(meal => meal.dish),
-    `weekday ${weekday + 1}: week two is not a copy of week one`,
-  )
+  const lunch = day.meals[1]
+  const dinner = MENU[(index + 13) % 14].meals[3]
+  assert.deepEqual({ ...lunch, name: dinner.name }, { ...dinner }, `day ${index + 1}: dinner and next lunch are the same portion`)
+  assert.ok(SHOPPING[index].buy.length && SHOPPING[index].use.length)
 }
 
-const menuData = JSON.stringify(context.MENU) + JSON.stringify(context.RECIPES) + JSON.stringify(context.SHOPPING)
-assert.doesNotMatch(menuData, /рыб|лосос|тунец|треск|кревет|морепродукт/i)
-for (const removed of ['Личный план', 'Нормальная еда на неделю', 'Белковая страховка', 'Почему не 2500']) {
-  assert.ok(!html.includes(removed), `removed block is absent: ${removed}`)
-}
+const included = new Set(MENU.flatMap(day => day.meals.map(meal => meal.recipe)))
+const uploadedRecipes = [
+  'savoryWaffles', 'poppyPancakes', 'funchose', 'syrniki', 'omelet',
+  'chocolateWaffles', 'chickenPatties', 'barrel', 'meatballsMash',
+  'lavashBreakfast', 'shawarma', 'chickenSkewers', 'sausageOmelet', 'choppedCutlets',
+]
+for (const recipe of uploadedRecipes) assert.ok(included.has(recipe), `uploaded recipe ${recipe} is in the plan`)
+assert.equal(MENU[6].meals[0].recipe, 'tunaAvocado')
+assert.doesNotMatch(JSON.stringify(MENU), /лосос|треск|кревет|кильк|наваг|тилапи/i)
+assert.ok(!RECIPES.omelet.img)
+assert.equal(MENU[5].meals[1].recipe, 'shawarma')
+for (const index of [1, 3, 8, 10]) assert.notEqual(MENU[index].meals[1].recipe, 'shawarma')
+assert.equal(MENU[1].meals[1].recipe, 'chickenRice')
+assert.deepEqual(Array.from(MENU[1].meals[1].portion), ['грудка готовая 150 г', 'рис готовый 170 г', 'брокколи 150 г'])
+assert.match(SHOPPING[0].buy.join(' '), /Филе 900 г.*рис 540 г.*340 г на гарнир, 200 г на два замеса.*брокколи 300 г/)
+assert.match(SHOPPING[1].use.join(' '), /400 г филе и 100 г готового риса/)
+assert.match(SHOPPING[8].use.join(' '), /400 г.*100 г готового риса/)
+assert.doesNotMatch(SHOPPING[1].buy.join(' '), /курин.*грудк/i)
+assert.match(SHOPPING[4].left.join(' '), /450 г.*400 г.*50 г/)
+assert.match(SHOPPING[13].use.join(' '), /150 г.*100 г.*100 г.*50 г/)
+assert.match(RECIPES.chickenSkewers.method, /8 часов.*200 °C/)
 
-assert.ok(html.includes('Рецепт и порция'))
-assert.ok(html.includes('weekButton.textContent="Неделя "+(week+1)'))
-assert.ok(html.includes('Что купить и куда уйдут остатки'))
-assert.ok(html.includes('Куриное филе — упаковка 900 г'))
-assert.match(context.SHOPPING[0].left.join(' '), /550 г.*вторник/)
-assert.match(context.SHOPPING[1].use.join(' '), /550 г.*150 г.*400 г/)
-assert.match(context.SHOPPING[9].left.join(' '), /550 г.*четверг/)
+const day = '2026-11-23'
+const next = '2026-11-24'
+const key = 'menu:' + day
+const draft = { days: { 0: { done: [true, false, false, true], comment: '=1+1', googleSaved: false } } }
 
-// Owner feedback: portions, recipes and ingredient flows must change together.
-assert.ok(!context.RECIPES.omelet.img, 'omelet has no unrelated photo')
-for (const index of [0, 7]) {
-  assert.doesNotMatch(JSON.stringify(context.MENU[index].meals[0]), /ягод/i, 'Monday breakfast has no berries')
-}
-for (const index of [0, 1, 4, 7, 8, 9, 11]) {
-  const meal = context.MENU[index].meals[2]
-  assert.equal(meal.dish, 'Творог с бананом, яблоком и греческим йогуртом')
-  assert.equal(meal.recipe, 'cottageBowl')
-  assert.match(context.SHOPPING[index].buy.join(' '), /Творог|творог/)
-  assert.match(context.SHOPPING[index].buy.join(' '), /яблоко/i)
-}
-assert.doesNotMatch(JSON.stringify(context.RECIPES.cottageBowl), /ягод|хлеб|миска/i)
-for (const mealIndex of [1, 3]) assert.equal(context.MENU[2].meals[mealIndex].recipe, 'chickenPatties')
-assert.equal(context.MENU[3].meals[1].recipe, 'chickenPatties')
-assert.match(context.SHOPPING[2].use.join(' '), /600 г.*3 равные порции.*обед.*ужин/)
-assert.match(context.SHOPPING[2].left.join(' '), /1 готовая порция.*четверг/)
-assert.match(context.SHOPPING[3].use.join(' '), /Последняя готовая порция котлет/)
-assert.match(context.SHOPPING[11].buy.join(' '), /фарш — 600 г/)
-assert.match(context.SHOPPING[11].left.join(' '), /2 готовые порции новых котлет/)
-assert.doesNotMatch(context.SHOPPING[11].use.join(' '), /последняя порция котлет/)
-for (const index of [1, 3, 8, 10]) assert.notEqual(context.MENU[index].meals[1].recipe, 'shawarma')
-assert.equal(context.MENU[5].meals[1].recipe, 'shawarma', 'Saturday shawarma remains')
-assert.equal(context.RECIPES[context.MENU[4].meals[1].recipe].ingredients[0], 'Куриное филе 500 г', 'first Friday keeps the full batch')
-assert.equal(context.RECIPES[context.MENU[10].meals[3].recipe].ingredients[0], 'Куриное филе 400 г', 'second Thursday recipe uses exactly the available fillet')
-assert.match(context.SHOPPING[10].use.join(' '), /400 г — рубленые котлеты/, 'second Thursday shopping agrees with the recipe batch')
-for (const index of [1, 10]) {
-  assert.equal(context.MENU[index].meals[1].recipe, 'chickenMash')
-  assert.doesNotMatch(JSON.stringify(context.SHOPPING[index]), /шаурм/i)
-}
-for (const index of [1, 8]) {
-  assert.equal(context.MENU[index].meals[3].recipe, 'meatballsMash')
-  assert.match(context.MENU[index].meals[3].portion.join(' '), /картофель.*молоко.*сливочное масло/)
-  assert.doesNotMatch(JSON.stringify(context.SHOPPING[index]), /паста — 167|паста 167/)
-}
-assert.equal(context.MENU[3].meals[0].recipe, 'granola')
-assert.equal(context.MENU[7].meals[0].recipe, 'granola')
-assert.doesNotMatch(JSON.stringify(context.SHOPPING[7]), /сырник/)
-for (const index of [2, 8]) {
-  assert.equal(context.MENU[index].meals[0].recipe, 'poppyPancakes')
-  assert.match(context.MENU[index].meals[0].portion.join(' '), /варенье без сахара 20 г/)
-}
-assert.equal(context.MENU[9].meals[0].recipe, 'lavashBreakfast')
-assert.doesNotMatch(JSON.stringify(context.MENU[9].meals[0]), /варенье|сгущ/i)
-for (const index of [4, 11]) {
-  assert.match(context.MENU[index].meals[0].portion.join(' '), /греческий йогурт 100 г.*сахарозаменитель/)
-}
-assert.match(context.RECIPES.chocolateWaffles.method, /взвесить.*калории по этикетке/)
-assert.ok(html.includes('Синхронизировать день'))
-assert.ok(html.includes('GOOGLE_SHEET_NAME="Питание"'))
-assert.ok(html.includes('addSheet'))
-assert.ok(html.includes('client.requestAccessToken({prompt:"select_account"})'))
-assert.ok(html.includes('dayAlreadySaved'))
+const disconnected = setup({ hash: '#journal=invalid', storage: new Map([[key, JSON.stringify(draft)]]) })
+disconnected.app.selectDate(day)
+assert.equal(disconnected.elements.get('saveDay').disabled, true)
+assert.equal(disconnected.elements.get('comment').disabled, false)
+await disconnected.app.saveDay()
+assert.equal(disconnected.requests.length, 0)
 
-console.log('OK: 14 дней, КБЖУ, рецепты, закупки, остатки и Google-журнал проверены')
+const first = setup({ storage: new Map([[key, JSON.stringify(draft)]]) })
+first.app.selectDate(day)
+assert.equal(first.app.currentState().comment, '=1+1', 'saved draft from the published version is restored')
+const foodJournalUrl = 'https://docs.google.com/spreadsheets/d/' + fakeFoodJournalId + '/edit'
+assert.equal(first.elements.get('journalLink').href, foodJournalUrl)
+assert.equal(first.storage.get('menu:food-journal'), fakeFoodJournalId)
+const reopened = setup({ storage: first.storage, hash: '' })
+reopened.app.selectDate(day)
+assert.equal(reopened.elements.get('journalLink').href, foodJournalUrl, 'plain menu remembers the first linked journal')
+const anotherLink = setup({ storage: first.storage, hash: '#journal=another-journal-abcdefghijkl' })
+assert.equal(anotherLink.elements.get('journalLink').href, foodJournalUrl, 'another link cannot replace the saved journal')
+const write = first.app.saveDay()
+first.app.selectPlanDay(1)
+assert.equal(first.elements.get('journalDate').value, next, 'selecting Tuesday advances the date')
+await write
+assert.equal(first.app.currentState().googleSaved, false, 'navigating during sync does not mark the next day saved')
+assert.equal(JSON.parse(first.storage.get(key)).days[0].googleSaved, true)
+assert.deepEqual(first.requests.map(request => request.method), ['GET', 'POST', 'GET', 'PUT', 'GET', 'POST'])
+assert.equal(first.journal.rows.length, 4)
+assert.ok(first.journal.rows.every(row => row[0] === day && row[7] === '=1+1'))
+assert.equal(first.journal.rows[3][3], 'Куриная грудка с рисом и брокколи')
+assert.equal(first.journal.rows[3][6], 'Съедено')
+
+const retry = setup({ storage: new Map([[key, JSON.stringify(draft)]]), failAfterAppend: true })
+retry.app.selectDate(day)
+await retry.app.saveDay()
+assert.equal(retry.app.currentState().googleSaved, false, 'network error leaves the draft editable')
+await retry.app.saveDay()
+assert.equal(retry.app.currentState().googleSaved, true)
+assert.equal(retry.requests.filter(request => request.path.includes(':append')).length, 1, 'retry does not duplicate rows')
+
+const legacy = setup({ storage: new Map([[key, JSON.stringify(draft)]]), existing: true })
+legacy.journal.headers = first.journal.headers
+const serialDate = (Date.parse(day) - Date.UTC(1899, 11, 30)) / 86400000
+legacy.journal.rows = Array.from({ length: 4 }, () => [serialDate])
+legacy.app.selectDate(day)
+await legacy.app.saveDay()
+assert.equal(legacy.app.currentState().googleSaved, true)
+assert.ok(!legacy.requests.some(request => request.path.includes(':append')))
+
+const popup = setup({ storage: new Map([[key, JSON.stringify(draft)]]), oauthError: 'popup_closed' })
+popup.app.selectDate(day)
+await popup.app.saveDay()
+assert.match(popup.elements.get('syncState').textContent, /окно входа Google закрыто/i)
+assert.equal(popup.app.currentState().comment, '=1+1')
+assert.equal(popup.requests.length, 0)
+
+const noPermission = setup({ storage: new Map([[key, JSON.stringify(draft)]]), httpFail: 403 })
+noPermission.app.selectDate(day)
+await noPermission.app.saveDay()
+assert.match(noPermission.elements.get('syncState').textContent, /нет доступа на запись/i)
+assert.equal(noPermission.app.currentState().googleSaved, false)
+
+console.log('OK: 14 дней, 14 загруженных рецептов, завтрак с тунцом, 14 переходов ужин → обед, первое сохранение и повтор Google Sheets')
